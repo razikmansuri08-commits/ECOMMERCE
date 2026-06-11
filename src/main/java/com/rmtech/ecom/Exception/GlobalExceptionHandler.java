@@ -4,6 +4,7 @@ import com.rmtech.ecom.DTOS.Error_ResponseDto;
 import com.rmtech.ecom.DTOS.ValidationErrorResponse_Dto;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.cache.CacheException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
@@ -60,15 +61,7 @@ public class GlobalExceptionHandler
             MethodArgumentInvalid ex,HttpServletRequest request)
     {
         log.error("Validation failed:", ex);
-//        Map<String, String> errors = new HashMap<>();
-//
-//        ex.getBindingResult()
-//                .getFieldErrors()
-//                .forEach(error ->
-//                        errors.put(
-//                                error.getField(),
-//                                error.getDefaultMessage()
-//                        ));
+
         Error_ResponseDto er=new Error_ResponseDto(
                 LocalDateTime.now(),
                 "VALIDATION_ERROR",
@@ -78,6 +71,18 @@ public class GlobalExceptionHandler
         );
 
         return ResponseEntity.badRequest().body(er);
+    }
+
+    @ExceptionHandler(CacheException.class)
+    public ResponseEntity<Error_ResponseDto> handleCacheExceptionFound(CacheException ex, HttpServletRequest request)
+    {
+        Error_ResponseDto er=new Error_ResponseDto
+                (LocalDateTime.now(),
+                        ex.getMessage(),
+                        "NOT_FOUND",
+                        503,
+                        request.getRequestURI());
+        return ResponseEntity.status(503).body(er);
     }
 
     @ExceptionHandler(ProductNotFoundException.class)
