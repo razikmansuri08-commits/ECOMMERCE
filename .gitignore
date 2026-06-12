@@ -44,4 +44,4 @@ target/
 .idea/
 *.iml
 
-.env
+.env.dev
