@@ -46,3 +46,26 @@ target/
 
 .env.dev
 .env.prod
+
+#    To run application through docker
+#    docker compose --env-file .env.dev up --build
+
+#    To run application through intellij
+#    setup env variables in intellij
+
+#     To verify env variables inside docker
+#     docker compose exec app printenv | grep JWT
+
+#     to remove a file from entire git history
+#     git filter-branch --force --index-filter "git rm --cached --ignore-unmatch <file>" --prune-empty --tag-name-filter cat -- --all
+
+#     git filter-repo --path .env.prod --invert-paths --force
+
+#     then  git remote add origin https://github.com/razikmansuri08-commits/ECOMMERCE.git
+
+#     then   git push origin --force --all
+
+#     this(51) applies all changes to the new branch(50)
+
+#     49 deletes the old branch from github
+

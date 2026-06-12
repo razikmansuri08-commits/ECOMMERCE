@@ -36,9 +36,3 @@ services:
       SPRING_REDIS_HOST: ${SPRING_REDIS_HOST}
 volumes:
   mysql_data:
-
-#    To run application through docker
-#    docker compose --env-file .env.dev up --build
-
-#     To verify env variables inside docker
-#     docker compose exec app printenv | grep JWT
