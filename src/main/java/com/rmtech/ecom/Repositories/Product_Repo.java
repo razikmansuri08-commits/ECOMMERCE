@@ -13,7 +13,7 @@ import java.util.Optional;
 @Repository
 public interface Product_Repo extends JpaRepository<Product,Long>, JpaSpecificationExecutor<Product> {
 
-    Page<Product> findAll(Pageable pageable);
+//    Page<Product> findAll(spec ,Pageable pageable);
 
 //    @Query("SELECT p FROM Product p left join fetch p.category where p.id=:id")
 //    Optional<Product> findbyidwithcategory(Long id);

@@ -14,7 +14,7 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
-public class Category  {
+public class Category implements Serializable {
 
     @Id
     @GeneratedValue

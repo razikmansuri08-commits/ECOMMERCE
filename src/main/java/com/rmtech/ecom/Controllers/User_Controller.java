@@ -34,7 +34,7 @@ public class User_Controller {
     }
 
     @PatchMapping("/update")
-    public ResponseEntity<?> update_user( @Valid @RequestBody UserUpdate_Dto user)
+    public ResponseEntity<?> update_user(@RequestBody UserUpdate_Dto user)
     {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();

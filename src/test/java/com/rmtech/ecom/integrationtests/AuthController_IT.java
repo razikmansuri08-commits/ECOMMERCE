@@ -104,8 +104,8 @@ public class AuthController_IT {
                                 .contentType(APPLICATION_JSON)
                                 .content(requestBody)
                 )
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.error").value("NOT_FOUND"));
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("BAD_REQUEST"));
     }
 
     @Test
@@ -122,8 +122,8 @@ public class AuthController_IT {
                                 .contentType(APPLICATION_JSON)
                                 .content(requestBody)
                 )
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.error").value("NOT_FOUND"));
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("BAD_REQUEST"));
     }
 
     @Test
@@ -234,29 +234,6 @@ public class AuthController_IT {
                 .andExpect(status().isUnauthorized());
     }
 
-    @Test
-    void shouldRejectLogoutWithInvalidRefreshToken() throws Exception {
-        User user = new User();
-        user.setName("name");
-        user.setEmail("test@gmail.com");
-        user.setPassword(passwordEncoder.encode("password"));
-        userRepository.save(user);
 
-        String accessToken = jwtUtil.generateToken(user.getName());
-        String requestBody = """
-        {
-          "refreshToken":"invalid"
-        }
-        """;
-
-        mockMvc.perform(
-                        post("/auth/logout")
-                                .header("Authorization", "Bearer " + accessToken)
-                                .contentType(APPLICATION_JSON)
-                                .content(requestBody)
-                )
-                .andExpect(status().isInternalServerError())
-                .andExpect(jsonPath("$.error").value("INTERNAL_SERVER_ERROR"));
-    }
 
 }

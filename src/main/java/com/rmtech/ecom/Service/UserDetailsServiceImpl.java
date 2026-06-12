@@ -2,6 +2,7 @@ package com.rmtech.ecom.Service;
 
 
 import com.rmtech.ecom.Entities.User;
+import com.rmtech.ecom.Exception.BadCredentialsException;
 import com.rmtech.ecom.Exception.UserNotFoundException;
 import com.rmtech.ecom.Repositories.User_Repo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +29,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         User user=ur.findbyusername(username);
         if(user==null)
         {
-            throw new UserNotFoundException("user not found");
+            throw new BadCredentialsException("Invalid credentials");
 
         }
         List<GrantedAuthority> authorities=user.getRoles()

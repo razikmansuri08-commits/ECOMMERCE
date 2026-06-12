@@ -3,6 +3,7 @@ package com.rmtech.ecom.Service;
 import com.rmtech.ecom.Entities.Inventory;
 import com.rmtech.ecom.Exception.InsufficientStockException;
 import com.rmtech.ecom.Exception.InventoryNotFoundException;
+import com.rmtech.ecom.Exception.MethodArgumentInvalid;
 import com.rmtech.ecom.Repositories.Inventory_Repo;
 import jakarta.persistence.Id;
 import jakarta.persistence.OptimisticLockException;
@@ -22,7 +23,7 @@ public class Inventory_Service {
     public void decrease_stock(Long product_id,int quantity)
     {
         if(quantity<0)
-            throw new IllegalArgumentException("Quantity cannot be negative");
+            throw new MethodArgumentInvalid("Quantity cannot be negative");
         Inventory inventory = inventory_Repo.findByProductId(product_id);
         if(inventory==null)
             throw new InventoryNotFoundException("Inventory not found");
@@ -37,7 +38,7 @@ public class Inventory_Service {
     {
         try {
             if (quantity < 0)
-                throw new IllegalArgumentException("Quantity cannot be negative");
+                throw new MethodArgumentInvalid("Quantity cannot be negative");
             Inventory inventory = inventory_Repo.findByProductId(product_id);
             if (inventory == null)
                 throw new InventoryNotFoundException("Inventory not found");
@@ -53,7 +54,7 @@ public class Inventory_Service {
     public void addstock(Long product_id,int quantity)
     {
         if(quantity<0)
-            throw new IllegalArgumentException("Quantity cannot be negative");
+            throw new MethodArgumentInvalid("Quantity cannot be negative");
         Inventory inventory = inventory_Repo.findByProductId(product_id);
         if(inventory==null)
             throw new InventoryNotFoundException("Inventory not found");
@@ -65,7 +66,7 @@ public class Inventory_Service {
     public void removestock(Long product_id,int quantity)
     {
         if(quantity<0)
-            throw new IllegalArgumentException("Quantity cannot be negative");
+            throw new MethodArgumentInvalid("Quantity cannot be negative");
 
         Inventory inventory = inventory_Repo.findByProductId(product_id);
         if(inventory==null)

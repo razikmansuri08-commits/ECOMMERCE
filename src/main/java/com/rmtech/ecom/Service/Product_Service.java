@@ -6,6 +6,7 @@ import com.rmtech.ecom.DTOS.ProductUpdate_Dto;
 import com.rmtech.ecom.DTOS.Product_dto;
 import com.rmtech.ecom.Entities.Category;
 import com.rmtech.ecom.Entities.Product;
+import com.rmtech.ecom.Exception.MethodArgumentInvalid;
 import com.rmtech.ecom.Exception.ProductNotFoundException;
 import com.rmtech.ecom.Repositories.Category_Repo;
 import com.rmtech.ecom.Repositories.Product_Repo;
@@ -45,9 +46,9 @@ public class Product_Service
     public Product_dto create_prod(ProductRequestDto prd){
 
         if(prd.getName()==null)
-            throw new IllegalArgumentException("Product name is required");
+            throw new MethodArgumentInvalid("Product name is required");
         if(prd.getPrice()<=0)
-            throw new IllegalArgumentException("Product price must be greater than 0");
+            throw new MethodArgumentInvalid("Product price must be greater than 0");
 
         Category category=crr.findById(prd.getCategoryid()).orElseThrow(()->new ProductNotFoundException("Category not found"));
         Product product = new Product();

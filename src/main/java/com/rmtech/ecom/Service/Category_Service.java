@@ -22,11 +22,6 @@ public class Category_Service {
     }
 
     @Transactional
-    @Cacheable(value = "categories", key = "#id")
-    @CacheEvict(
-            value = "categories",
-            allEntries = true
-    )
     public CategoryDto createCategory(CategoryDto cat)
     {
         if (category_Repo.existsByName(cat.getName())) {

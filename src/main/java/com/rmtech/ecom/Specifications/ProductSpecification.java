@@ -11,8 +11,8 @@ public class ProductSpecification {
 
         return (root, query, criteriaBuilder) ->
                 criteriaBuilder.equal(
-                        root.get("name"),
-                        category
+                        root.get("category").get("id"),
+                        category.getId()
                 );
     }
     public static Specification<Product> hasPriceGreaterThan(

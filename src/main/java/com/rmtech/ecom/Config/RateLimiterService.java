@@ -22,7 +22,7 @@ public class RateLimiterService {
     private static final RateLimitConfig AUTH_LOGIN_LIMIT = new RateLimitConfig(10, Duration.ofMinutes(15));
     private static final RateLimitConfig AUTH_REFRESH_LIMIT = new RateLimitConfig(30, Duration.ofMinutes(15));
     private static final RateLimitConfig AUTH_LOGOUT_LIMIT = new RateLimitConfig(30, Duration.ofMinutes(1));
-    private static final RateLimitConfig PUBLIC_REGISTER_LIMIT = new RateLimitConfig(5, Duration.ofHours(1));
+    private static final RateLimitConfig PUBLIC_REGISTER_LIMIT = new RateLimitConfig(55, Duration.ofHours(1));
     private static final RateLimitConfig PUBLIC_READ_LIMIT = new RateLimitConfig(120, Duration.ofMinutes(1));
     private static final RateLimitConfig PUBLIC_FILTER_LIMIT = new RateLimitConfig(60, Duration.ofMinutes(1));
     private static final RateLimitConfig USER_READ_LIMIT = new RateLimitConfig(60, Duration.ofMinutes(1));

@@ -1,6 +1,7 @@
 package com.rmtech.ecom.Service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -8,9 +9,11 @@ import java.time.Duration;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class LoginAttemptService {
 
     private final RedisTemplate<String, Object> redisTemplate;
+
 
     private static final int MAX_LOGIN_ATTEMPTS =5;
     private static final Duration LOCKED_DURATION = Duration.ofMinutes(15);
@@ -35,7 +38,8 @@ public class LoginAttemptService {
 
     public boolean isLocked(String username) {
         String key= getKey(username);
-        Object attempts = redisTemplate.hasKey(key);
+        Object attempts = redisTemplate.opsForValue().get(key);
+        log.info("Attempts: " + attempts);
         if(attempts == null) {
             return false;
         }

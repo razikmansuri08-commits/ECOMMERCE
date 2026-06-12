@@ -6,6 +6,7 @@ import com.rmtech.ecom.DTOS.AuthResponse;
 import com.rmtech.ecom.DTOS.RefreshTokenRequest;
 import com.rmtech.ecom.Entities.RefreshToken;
 import com.rmtech.ecom.Entities.User;
+import com.rmtech.ecom.Exception.JwtTokenInvalidException;
 import com.rmtech.ecom.Exception.UserLOckedException;
 import com.rmtech.ecom.Exception.UserNotFoundException;
 import com.rmtech.ecom.Repositories.RefreshTokenRepository;
@@ -52,24 +53,28 @@ public class AuthService {
             Long remainingtime=loginAttemptService.getremainingLockTime(request.getUsername());
             throw new UserLOckedException("try again after " + remainingtime + " seconds");
         }
-        try {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
-        );
-        UserDetails userDetails;
+            UserDetails userDetails;
 
             userDetails = userDetailsService
                     .loadUserByUsername(request.getUsername());
+            if(userDetails==null)
+            {
+                loginAttemptService.loginFailed(request.getUsername());
+                throw new com.rmtech.ecom.Exception.BadCredentialsException("Invalid credentials");
+            }
+            if(!passwordEncoder.matches(request.getPassword(), userDetails.getPassword()))
+            {
+                loginAttemptService.loginFailed(request.getUsername());
+                throw new com.rmtech.ecom.Exception.BadCredentialsException("Invalid credentials");
+            }
 
-        String       accessToken  = jwtUtil.generateToken(userDetails.getUsername());
-        String refreshToken = refreshTokenService.createRefreshToken(userDetails.getUsername());
+            String accessToken = jwtUtil.generateToken(userDetails.getUsername());
+            String refreshToken = refreshTokenService.createRefreshToken(userDetails.getUsername());
+            loginAttemptService.loginSucces(request.getUsername());
 
-        return new AuthResponse(accessToken, refreshToken);
-        } catch (BadCredentialsException e) {
-            loginAttemptService.loginFailed(request.getUsername());
-            throw new UserNotFoundException("Invalid credentials");
-        }
+            return new AuthResponse(accessToken, refreshToken);
     }
+
     public AuthResponse refresh(String rawRefreshToken) {
 
         RefreshToken oldToken = refreshTokenService

@@ -182,7 +182,7 @@ public class PublicController_IT {
 
         Long id=category.getId();
         mockMvc.perform(get("/public/expensiveproducts")
-                        .param("categoryid", String.valueOf(id))
+                        .param("categoryid", id.toString())
                         .param("minPrice", "200")
                         .param("page", "0")
                         .param("size", "10"))

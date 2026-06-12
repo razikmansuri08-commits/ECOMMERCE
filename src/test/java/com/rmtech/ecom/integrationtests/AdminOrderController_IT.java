@@ -33,6 +33,8 @@ import org.springframework.security.test.context.support.WithMockUser;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+
 @SpringBootTest
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
@@ -73,11 +75,17 @@ public class AdminOrderController_IT {
         cacheManager.getCache("categories").clear();
     }
     @Test
-    @WithMockUser(roles = "ADMIN")
+    @WithMockUser(username = "user", roles = "USER")
     void should_return_paginated_orders() throws Exception {
 
         User user=new User();
+        user.setName("user");
+        user.setPassword(passwordEncoder.encode("password"));
+        user.setRoles(List.of(UserRoles.USER));
         userRepository.save(user);
+
+
+
         Orders order1=new Orders();
         Orders order2=new Orders();
         Orders order3=new Orders();
@@ -536,8 +544,8 @@ public class AdminOrderController_IT {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("-1")
                 )
-                .andExpect(status().isInternalServerError())
-                .andExpect(jsonPath("$.error").value("INTERNAL_SERVER_ERROR"));
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("BAD_REQUEST"));
     }
 
     @Test

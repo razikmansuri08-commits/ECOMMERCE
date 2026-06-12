@@ -38,14 +38,13 @@ public class Auth_Controller
 
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@Valid @RequestBody AuthRequest authRequest) {
+    public ResponseEntity<?> login(@RequestBody AuthRequest authRequest) {
 
         return ResponseEntity.ok(authService.login(authRequest));
     }
 
     @PostMapping("/refresh")
     public ResponseEntity<?> refreshToken(
-            @Valid
             @RequestBody RefreshTokenRequest request) {
 
             AuthResponse response = authService.refresh(request.getRefreshToken());
@@ -55,7 +54,7 @@ public class Auth_Controller
     @PostMapping("/logout")
     public ResponseEntity<String> logout(
             HttpServletRequest httpRequest,
-           @Valid @RequestBody RefreshTokenRequest refreshTokenRequest) {
+           @RequestBody RefreshTokenRequest refreshTokenRequest) {
 
             authService.logout(httpRequest, refreshTokenRequest);
             return ResponseEntity.ok("Logged out successfully");

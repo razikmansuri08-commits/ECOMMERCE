@@ -234,6 +234,7 @@ public class AdminUserController_IT {
     @Test
     @WithMockUser(roles = "ADMIN")
     void should_create_root_category() throws Exception {
+
         String requestBody = """
         {
             "name":"Electronics"

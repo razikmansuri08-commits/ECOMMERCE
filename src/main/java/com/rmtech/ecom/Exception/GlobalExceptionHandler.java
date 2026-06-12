@@ -31,6 +31,18 @@ public class GlobalExceptionHandler
                         request.getRequestURI());
         return ResponseEntity.status(404).body(er);
     }
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<Error_ResponseDto> handleBadCredentialsException(BadCredentialsException ex,HttpServletRequest request)
+    {
+        Error_ResponseDto er=new Error_ResponseDto
+                (LocalDateTime.now(),
+                        ex.getMessage(),
+                        "BAD_REQUEST",
+                        400,
+                        request.getRequestURI());
+        return ResponseEntity.status(400).body(er);
+    }
+
 
     @ExceptionHandler(UserLOckedException.class)
     public ResponseEntity<Error_ResponseDto> handleUserLocked(UserLOckedException ex,HttpServletRequest request)
@@ -60,7 +72,7 @@ public class GlobalExceptionHandler
     public ResponseEntity<?> handleValidationException(
             MethodArgumentInvalid ex,HttpServletRequest request)
     {
-        log.error("Validation failed:", ex);
+//        log.error("Validation failed:", ex);
 
         Error_ResponseDto er=new Error_ResponseDto(
                 LocalDateTime.now(),
@@ -70,7 +82,7 @@ public class GlobalExceptionHandler
                 request.getRequestURI()
         );
 
-        return ResponseEntity.badRequest().body(er);
+        return ResponseEntity.status(400).body(er);
     }
 
     @ExceptionHandler(CacheException.class)

@@ -43,3 +43,5 @@ target/
 # IntelliJ (if used)
 .idea/
 *.iml
+
+.env

@@ -49,7 +49,7 @@ public class Admin_Controllers
 
 
     @PostMapping("/category")
-    public ResponseEntity<?> create_category(@Valid @RequestBody CategoryDto categorydto)
+    public ResponseEntity<?> create_category(@RequestBody CategoryDto categorydto)
     {
         return ResponseEntity.status(HttpStatus.CREATED).body(cs.createCategory(categorydto));
     }
@@ -80,7 +80,7 @@ public class Admin_Controllers
     }
 
     @PostMapping("/product")
-    public ResponseEntity<?> create_product(@Valid @RequestBody ProductRequestDto pr)
+    public ResponseEntity<?> create_product( @RequestBody ProductRequestDto pr)
     {
             Product_dto productdto=ps.create_prod(pr);
         return ResponseEntity.status(HttpStatus.CREATED).body(productdto);
@@ -93,7 +93,7 @@ public class Admin_Controllers
     }
 
     @PatchMapping("/product/{id}")
-    public ResponseEntity<?> update_product(@PathVariable Long id,@Valid @RequestBody ProductUpdate_Dto prod)
+    public ResponseEntity<?> update_product(@PathVariable Long id, @RequestBody ProductUpdate_Dto prod)
     {
     Product_dto updated_prod = ps.update_prod(id, prod);
 
@@ -109,7 +109,7 @@ public class Admin_Controllers
 
     @PatchMapping("/admin")
 
-    public ResponseEntity<?> update_admin( @Valid @RequestBody UserUpdate_Dto user)
+    public ResponseEntity<?> update_admin( @RequestBody UserUpdate_Dto user)
     {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
@@ -120,14 +120,14 @@ public class Admin_Controllers
     }
 
     @PatchMapping("/setorderstatus")
-    public ResponseEntity<?> update_status( @Valid @RequestBody UpdateOrderStatusDto req)
+    public ResponseEntity<?> update_status( @RequestBody UpdateOrderStatusDto req)
     {
 
         return ResponseEntity.status(HttpStatus.OK).body(os.updateStatus(req.getOrderId(), req.getStatus()));
     }
 
     @GetMapping("/getorderstatus")
-    public ResponseEntity<?> get_status(@Valid @RequestBody String id)
+    public ResponseEntity<?> get_status( @RequestBody String id)
     {
         return ResponseEntity.ok(os.getOrderStatus(id));
     }
