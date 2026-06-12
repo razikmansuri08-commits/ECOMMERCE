@@ -2,6 +2,7 @@ package com.rmtech.ecom.unittests;
 
 import com.rmtech.ecom.Entities.User;
 import com.rmtech.ecom.Entities.UserRoles;
+import com.rmtech.ecom.Exception.BadCredentialsException;
 import com.rmtech.ecom.Exception.UserNotFoundException;
 import com.rmtech.ecom.Repositories.User_Repo;
 import com.rmtech.ecom.Service.UserDetailsServiceImpl;
@@ -57,7 +58,7 @@ class UserDetailsServiceImplTest {
         when(userRepo.findbyusername("missing")).thenReturn(null);
 
         assertThrows(
-                UserNotFoundException.class,
+                BadCredentialsException.class,
                 () -> userDetailsService.loadUserByUsername("missing")
         );
     }

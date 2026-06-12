@@ -3,6 +3,7 @@ package com.rmtech.ecom.unittests;
 import com.rmtech.ecom.Entities.Inventory;
 import com.rmtech.ecom.Exception.InsufficientStockException;
 import com.rmtech.ecom.Exception.InventoryNotFoundException;
+import com.rmtech.ecom.Exception.MethodArgumentInvalid;
 import com.rmtech.ecom.Repositories.Inventory_Repo;
 import com.rmtech.ecom.Service.Inventory_Service;
 import org.junit.jupiter.api.Test;
@@ -88,7 +89,7 @@ class InventoryServiceTest {
     @Test
     void shouldThrowWhenQuantityIsNegative() {
         assertThrows(
-                IllegalArgumentException.class,
+                MethodArgumentInvalid.class,
                 () -> inventoryService.increase_stock(1L, -1)
         );
     }

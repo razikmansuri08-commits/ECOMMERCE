@@ -66,6 +66,7 @@ public class AuthServiceTest {
         user.setPassword("password");
 
         when(loginAttemptService.isLocked("username")).thenReturn(false);
+        when(passwordEncoder.matches("password","hashedPassword")).thenReturn(true);
         when(userDetailsService.loadUserByUsername("username")).thenReturn(org.springframework.security.core.userdetails.User.builder()
                 .username(user.getName())
                 .password("hashedPassword")
