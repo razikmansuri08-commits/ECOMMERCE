@@ -25,4 +25,7 @@ public class Product implements Serializable {
 
     @Column(nullable = false)
     private Double price;
+
+    @Version
+    private Long version;
 }

@@ -34,6 +34,8 @@ public class Orders
     private LocalDateTime deliveredAt;
 
     private LocalDateTime cancelledAt;
+
+    private Double totalAmount;
 }
 
 

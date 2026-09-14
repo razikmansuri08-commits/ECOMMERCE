@@ -6,6 +6,7 @@ import com.rmtech.ecom.DTOS.AuthResponse;
 import com.rmtech.ecom.DTOS.RefreshTokenRequest;
 import com.rmtech.ecom.Entities.RefreshToken;
 import com.rmtech.ecom.Entities.User;
+import com.rmtech.ecom.Exception.RefreshTokenException;
 import com.rmtech.ecom.Repositories.User_Repo;
 import com.rmtech.ecom.Service.AuthService;
 import com.rmtech.ecom.Service.LoginAttemptService;
@@ -115,7 +116,7 @@ public class AuthServiceTest {
 
 
 
-        AuthResponse authResponse = authService.refresh("refreshToken");
+        AuthResponse authResponse = refreshTokenService.refresh("refreshToken");
 
         assertEquals("accessToken", authResponse.getAccesstoken());
         assertEquals("newrefreshToken", authResponse.getRefreshToken());
@@ -133,8 +134,8 @@ public class AuthServiceTest {
                 .thenReturn(empty());
 
         assertThrows(
-                IllegalArgumentException.class,
-                () -> authService.refresh(
+                RefreshTokenException.class,
+                () -> refreshTokenService.refresh(
                         "badToken"
                 )
         );

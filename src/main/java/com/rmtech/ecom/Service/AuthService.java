@@ -75,24 +75,24 @@ public class AuthService {
             return new AuthResponse(accessToken, refreshToken);
     }
 
-    public AuthResponse refresh(String rawRefreshToken) {
+//    public AuthResponse refresh(String rawRefreshToken) {
+//
+//        RefreshToken oldToken = refreshTokenService
+//                .findByRawToken(rawRefreshToken)
+//                .orElseThrow(() -> new IllegalArgumentException("Invalid refresh token"));
+//
+//        User user = userRepository.findbyid(oldToken.getUser().getId());
+//        refreshTokenService.deleteRefreshToken(oldToken);
+//        String newToken = refreshTokenService.createRefreshToken(user.getName());
+//
+//        String accessToken = jwtUtil.generateToken(user.getName());
+//
+//        return new AuthResponse(accessToken, newToken);
+//    }
 
-        RefreshToken oldToken = refreshTokenService
-                .findByRawToken(rawRefreshToken)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid refresh token"));
 
-        User user = userRepository.findbyid(oldToken.getUser().getId());
-        refreshTokenService.deleteRefreshToken(oldToken);
-        String newToken = refreshTokenService.createRefreshToken(user.getName());
-
-        String accessToken = jwtUtil.generateToken(user.getName());
-
-        return new AuthResponse(accessToken, newToken);
-    }
 
     public void logout(HttpServletRequest httpRequest, RefreshTokenRequest refreshTokenRequest) {
-
-
 
         String header = httpRequest.getHeader("Authorization");
 

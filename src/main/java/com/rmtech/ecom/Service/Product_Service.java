@@ -78,7 +78,7 @@ public class Product_Service
         productDto.setName(prod.getName());
         existing_prod.setPrice(prod.getPrice());
         productDto.setPrice(prod.getPrice());
-        Product product=prr.save(existing_prod);
+        prr.save(existing_prod);
         return productDto;
     }
 

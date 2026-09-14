@@ -1,9 +1,6 @@
 package com.rmtech.ecom.Service;
 
-import com.rmtech.ecom.DTOS.OrderPageResponse;
-import com.rmtech.ecom.DTOS.Order_Dto;
-import com.rmtech.ecom.DTOS.Order_ItemsDto;
-import com.rmtech.ecom.DTOS.User_dto;
+import com.rmtech.ecom.DTOS.*;
 import com.rmtech.ecom.Entities.*;
 import com.rmtech.ecom.Exception.InvalidOrderStatusException;
 import com.rmtech.ecom.Exception.OrderNotFoundException;
@@ -14,6 +11,7 @@ import com.rmtech.ecom.Repositories.Product_Repo;
 import com.rmtech.ecom.Repositories.User_Repo;
 import jakarta.transaction.Transactional;
 import lombok.experimental.Helper;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
@@ -34,12 +32,14 @@ public class Order_Service {
     private final User_Repo ur;
     private final Cart_Service cs;
     private final Inventory_Service is;
+    private final ApplicationEventPublisher eventPublisher;
 
-    public Order_Service(Order_Repo or, User_Repo ur, Cart_Service cs, Inventory_Service is) {
+    public Order_Service(Order_Repo or, User_Repo ur, Cart_Service cs, Inventory_Service is, ApplicationEventPublisher eventPublisher) {
         this.or = or;
         this.ur = ur;
         this.cs = cs;
         this.is = is;
+        this.eventPublisher = eventPublisher;
     }
     private static final Map<OrderStatus,
             Set<OrderStatus>> ALLOWED_TRANSITIONS =
@@ -105,7 +105,15 @@ public class Order_Service {
 
         order.setOrder_items(orderItems);
         or.save(order);
+
         cs.clear_crt(username);
+
+        eventPublisher.publishEvent(
+                new OrderCreatedEvent(
+                        order.getOrderId(),
+                        user.getId(),
+                        username,
+                        order.getTotalAmount()));
         return convertToDTO(order);
     }
     @Transactional

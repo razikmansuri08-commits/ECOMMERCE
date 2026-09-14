@@ -31,9 +31,11 @@ import java.time.LocalDateTime;
 public class Auth_Controller
 {
     private final AuthService authService;
+    private final RefreshTokenService refreshTokenService;
 
-    public Auth_Controller(AuthService authService) {
+    public Auth_Controller(AuthService authService, RefreshTokenService refreshTokenService) {
         this.authService = authService;
+        this.refreshTokenService = refreshTokenService;
     }
 
 
@@ -47,7 +49,7 @@ public class Auth_Controller
     public ResponseEntity<?> refreshToken(
             @RequestBody RefreshTokenRequest request) {
 
-            AuthResponse response = authService.refresh(request.getRefreshToken());
+            AuthResponse response = refreshTokenService.refresh(request.getRefreshToken());
             return ResponseEntity.ok(response);
     }
 

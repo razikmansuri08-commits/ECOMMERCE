@@ -66,6 +66,18 @@ public class GlobalExceptionHandler
                         request.getRequestURI());
         return ResponseEntity.status(429).body(er);
     }
+    @ExceptionHandler(RefreshTokenException.class)
+    public ResponseEntity<Error_ResponseDto> handleTooManyReqException(RefreshTokenException ex,HttpServletRequest request)
+    {
+        Error_ResponseDto er=new Error_ResponseDto
+                (LocalDateTime.now(),
+                        ex.getMessage(),
+                        "REFRESH_TOKEN_EXCEPTION",
+                        403,
+                        request.getRequestURI());
+        return ResponseEntity.status(403).body(er);
+    }
+
 
 
     @ExceptionHandler(MethodArgumentInvalid.class)

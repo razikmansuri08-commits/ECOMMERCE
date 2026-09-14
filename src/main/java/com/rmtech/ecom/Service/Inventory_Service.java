@@ -22,15 +22,20 @@ public class Inventory_Service {
     @Transactional
     public void decrease_stock(Long product_id,int quantity)
     {
-        if(quantity<0)
-            throw new MethodArgumentInvalid("Quantity cannot be negative");
-        Inventory inventory = inventory_Repo.findByProductId(product_id);
-        if(inventory==null)
-            throw new InventoryNotFoundException("Inventory not found");
+       try {
+           if (quantity < 0)
+               throw new MethodArgumentInvalid("Quantity cannot be negative");
+           Inventory inventory = inventory_Repo.findByProductId(product_id);
+           if (inventory == null)
+               throw new InventoryNotFoundException("Inventory not found");
 
-        if(inventory.getQuantity()<quantity)
-            throw new InsufficientStockException("Insufficient stock");
-        inventory.setQuantity(inventory.getQuantity()-quantity);
+           if (inventory.getQuantity() < quantity)
+               throw new InsufficientStockException("Insufficient stock");
+           inventory.setQuantity(inventory.getQuantity() - quantity);
+       }
+       catch (OptimisticLockException e) {
+           throw new OptimisticLockException(e);
+       }
     }
 
     @Transactional

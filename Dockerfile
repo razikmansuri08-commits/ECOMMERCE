@@ -9,6 +9,7 @@ RUN mvn clean package -DskipTests
 
 FROM eclipse-temurin:21-jdk
 
+
 WORKDIR /app
 
 #COPY target/ecom-0.0.1-SNAPSHOT.jar app.jar
