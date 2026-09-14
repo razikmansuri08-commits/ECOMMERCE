@@ -47,6 +47,8 @@ target/
 .env.dev
 .env.prod
 
+application.properties
+
 #    To run application through docker
 #    docker compose --env-file .env.dev up --build
 
