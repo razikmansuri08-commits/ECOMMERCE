@@ -42,9 +42,9 @@ public class Public_Controllers
         this.os = os;
     }
 
-    @Operation(summary = "Create Product")
+    @Operation(summary = "Create User")
     @PostMapping("/user")
-    public ResponseEntity<User_dto> create_user( @RequestBody UserRequest_Dto userRequestDto)
+    public ResponseEntity<User_dto> create_user(@Valid @RequestBody UserRequest_Dto userRequestDto)
     {
         User_dto userDto=us.create_us(userRequestDto);
 

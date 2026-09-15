@@ -409,7 +409,7 @@ public class AdminUserController_IT {
         mockMvc.perform(delete("/admin/admin"))
                 .andExpect(status().isNoContent());
 
-        assertFalse(userRepository.existsByname("admin"));
+        assertFalse(userRepository.existsByUsernameIgnoreCase("admin"));
     }
 
 }

@@ -9,6 +9,7 @@ import com.rmtech.ecom.Entities.User;
 import com.rmtech.ecom.Exception.JwtTokenInvalidException;
 import com.rmtech.ecom.Exception.UserLOckedException;
 import com.rmtech.ecom.Exception.UserNotFoundException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import com.rmtech.ecom.Repositories.RefreshTokenRepository;
 import com.rmtech.ecom.Repositories.User_Repo;
 import jakarta.servlet.http.HttpServletRequest;
@@ -54,11 +55,10 @@ public class AuthService {
             throw new UserLOckedException("try again after " + remainingtime + " seconds");
         }
             UserDetails userDetails;
-
-            userDetails = userDetailsService
-                    .loadUserByUsername(request.getUsername());
-            if(userDetails==null)
-            {
+            try {
+                userDetails = userDetailsService
+                        .loadUserByUsername(request.getUsername());
+            } catch (UsernameNotFoundException e) {
                 loginAttemptService.loginFailed(request.getUsername());
                 throw new com.rmtech.ecom.Exception.BadCredentialsException("Invalid credentials");
             }

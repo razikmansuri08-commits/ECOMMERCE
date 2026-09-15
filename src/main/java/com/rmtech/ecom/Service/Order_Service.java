@@ -5,12 +5,10 @@ import com.rmtech.ecom.Entities.*;
 import com.rmtech.ecom.Exception.InvalidOrderStatusException;
 import com.rmtech.ecom.Exception.OrderNotFoundException;
 import com.rmtech.ecom.Exception.UserNotFoundException;
-import com.rmtech.ecom.Repositories.Inventory_Repo;
 import com.rmtech.ecom.Repositories.Order_Repo;
-import com.rmtech.ecom.Repositories.Product_Repo;
 import com.rmtech.ecom.Repositories.User_Repo;
 import jakarta.transaction.Transactional;
-import lombok.experimental.Helper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -27,6 +25,7 @@ import java.util.Map;
 import java.util.Set;
 
 @Service
+@Slf4j
 public class Order_Service {
     private final Order_Repo or;
     private final User_Repo ur;
@@ -73,14 +72,14 @@ public class Order_Service {
 
 
     @Transactional
-    public Order_Dto place_ord(String username)
-    {
+    public Order_Dto place_ord(String username) {
         User user = ur.findbyusername(username);
         if (user == null)
             throw new UserNotFoundException("User not found");
+        
         Cart cart = user.getCart();
         if (cart == null) {
-            throw new IllegalArgumentException("cart not found");
+            throw new IllegalArgumentException("Cart not found");
         }
         if (cart.getCart_items().isEmpty()) {
             throw new IllegalArgumentException("Cart is empty");
@@ -92,40 +91,50 @@ public class Order_Service {
         order.setOrderedAt(LocalDateTime.now());
 
         List<Order_items> orderItems = new ArrayList<>();
+        double totalAmount = 0.0;
+        
         for (Cart_Items ci : cart.getCart_items()) {
-
-            is.decrease_stock(ci.getProduct().getId(),ci.getQuantity());
+            // Verify stock before decreasing
+            is.decrease_stock(ci.getProduct().getId(), ci.getQuantity());
 
             Order_items oi = new Order_items();
             oi.setProduct(ci.getProduct());
             oi.setQuantity(ci.getQuantity());
             oi.setOrder(order);
             orderItems.add(oi);
+
+            totalAmount += ci.getProduct().getPrice() * ci.getQuantity();
         }
 
         order.setOrder_items(orderItems);
-        or.save(order);
+        order.setTotalAmount(totalAmount);
+        
+        Orders savedOrder = or.save(order);
+        
+        // Clear the cart after successful order placement
+        cart.getCart_items().clear();
+        cs.get_crt(username); // Trigger cart save
+        
+        // Publish order created event for email notification
+        try {
+            eventPublisher.publishEvent(new OrderCreatedEvent(
+                    savedOrder.getOrderId(),
+                    user.getId(),
+                    user.getName(),
+                    user.getEmail(),
+                    totalAmount
+            ));
+            log.info("Order created event published for order: {}", savedOrder.getOrderId());
+        } catch (Exception e) {
+            log.error("Failed to publish order created event for order: {}", savedOrder.getOrderId(), e);
+            // Don't fail the order creation if event publishing fails
+        }
 
-        cs.clear_crt(username);
-
-        eventPublisher.publishEvent(
-                new OrderCreatedEvent(
-                        order.getOrderId(),
-                        user.getId(),
-                        username,
-                        order.getTotalAmount()));
-        return convertToDTO(order);
+        return convertToDTO(savedOrder);
     }
     @Transactional
     @PreAuthorize("hasRole('ADMIN')")
-    public OrderStatus updateStatus(
-            String orderId,
-            OrderStatus status)
-    {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
-            throw new AccessDeniedException("Access denied");
-        }
+    public OrderStatus updateStatus(String orderId, OrderStatus status) {
         Orders order = or.findByOrderId(orderId);
         if (order == null) {
             throw new OrderNotFoundException("Order not found");
@@ -137,6 +146,7 @@ public class Order_Service {
                     "Order is already in status: " + status);
         }
         validateTransition(order.getStatus(), status);
+        
         if (status == OrderStatus.SHIPPED) {
             order.setShippedAt(LocalDateTime.now());
         }
@@ -145,6 +155,7 @@ public class Order_Service {
         }
         if (status == OrderStatus.CANCELLED) {
             order.setCancelledAt(LocalDateTime.now());
+            // Restore stock when cancelling
             order.getOrder_items()
                     .forEach(item ->
                             is.addstock(
@@ -153,7 +164,8 @@ public class Order_Service {
                             ));
         }
 
-         order.setStatus(status);
+        order.setStatus(status);
+        or.save(order);
         return status;
     }
 
@@ -244,11 +256,6 @@ public class Order_Service {
         {
             validateTransition(order.getStatus(), OrderStatus.CANCELLED);
             order.getOrder_items().forEach(oi->is.increase_stock(oi.getProduct().getId(),oi.getQuantity()));
-            order.getOrder_items().clear();
-            order.setStatus(OrderStatus.CANCELLED);
-            order.setCancelledAt(LocalDateTime.now());
-
-            or.deleteOrderItemsByOrderId(orderId);
             or.delete(order);
             return true;
         }
@@ -271,6 +278,7 @@ public class Order_Service {
     private Order_Dto convertToDTO(Orders order) {
         Order_Dto orderDto = new Order_Dto();
         orderDto.setId((order.getOrderId()));
+        orderDto.setTotalAmount(order.getTotalAmount());
         List<Order_ItemsDto> itemsDto = order.getOrder_items().stream().map(orderItems ->
         {
             Order_ItemsDto orderItemsDto = new Order_ItemsDto();

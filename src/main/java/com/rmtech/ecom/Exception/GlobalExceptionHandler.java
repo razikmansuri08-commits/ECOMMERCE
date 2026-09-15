@@ -198,6 +198,21 @@ public class GlobalExceptionHandler
                 ));
     }
 
+    @ExceptionHandler(EmailSendException.class)
+    public ResponseEntity<Error_ResponseDto> handleEmailSendException(EmailSendException ex,HttpServletRequest request)
+    {
+        log.error("Email send failed", ex);
+
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body(new Error_ResponseDto(
+                        LocalDateTime.now(),
+                        "Failed to send email. Please try again later.",
+                        "EMAIL_SEND_ERROR",
+                        503,
+                        request.getRequestURI()
+                ));
+    }
+
     @ExceptionHandler(InventoryNotFoundException.class)
     public ResponseEntity<Error_ResponseDto> handleInventoryNotFound(InventoryNotFoundException ex,HttpServletRequest request)
     {

@@ -100,7 +100,7 @@ public class UserController_IT {
         mockMvc.perform(delete("/user/delete"))
                 .andExpect(status().isNoContent());
 
-        assertFalse(userRepository.existsByname("name"));
+        assertFalse(userRepository.existsByUsernameIgnoreCase("name"));
     }
 
     @Test

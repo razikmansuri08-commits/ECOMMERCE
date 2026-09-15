@@ -53,8 +53,8 @@ class UserServiceTest {
         request.setEmail("razik@example.com");
         request.setPassword("password123");
 
-        when(userRepo.existsByEmail("razik@example.com")).thenReturn(false);
-        when(userRepo.existsByname("Razik")).thenReturn(false);
+        when(userRepo.existsByEmailIgnoreCase("razik@example.com")).thenReturn(false);
+        when(userRepo.existsByUsernameIgnoreCase("Razik")).thenReturn(false);
         when(passwordEncoder.encode("password123")).thenReturn("encoded-password");
         when(userRepo.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -108,8 +108,8 @@ class UserServiceTest {
         UserRequest_Dto request = new UserRequest_Dto();
         request.setName("Razik");
         request.setEmail("razik@example.com");
-        when(userRepo.existsByEmail("razik@example.com")).thenReturn(false);
-        when(userRepo.existsByname("Razik")).thenReturn(true);
+        when(userRepo.existsByEmailIgnoreCase("razik@example.com")).thenReturn(false);
+        when(userRepo.existsByUsernameIgnoreCase("Razik")).thenReturn(true);
 
         assertThrows(
                 UserAlreadyExistsException.class,

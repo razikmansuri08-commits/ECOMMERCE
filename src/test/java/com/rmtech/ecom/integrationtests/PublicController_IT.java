@@ -66,7 +66,7 @@ public class PublicController_IT {
                 .andExpect(jsonPath("$.email").value("razik@example.com"))
                 .andExpect(jsonPath("$.roles[0]").value("USER"));
 
-        assertTrue(userRepository.existsByname("Razik"));
+        assertTrue(userRepository.existsByUsernameIgnoreCase("Razik"));
     }
 
     @Test

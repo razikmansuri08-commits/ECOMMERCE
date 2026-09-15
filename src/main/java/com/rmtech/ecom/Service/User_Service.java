@@ -1,4 +1,5 @@
 package com.rmtech.ecom.Service;
+
 import com.rmtech.ecom.DTOS.*;
 import com.rmtech.ecom.Entities.*;
 import com.rmtech.ecom.Exception.EmailAlreadyExistsException;
@@ -18,13 +19,14 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Locale;
 
 @Service
 public class User_Service
 {
     private final User_Repo ur;
     private final Order_Service os;
-
+    private final PasswordEncoder passwordEncoder;
 
     public User_Service(User_Repo ur, Order_Service os, PasswordEncoder passwordEncoder) {
         this.os = os;
@@ -32,48 +34,46 @@ public class User_Service
         this.ur = ur;
     }
 
-    private final PasswordEncoder passwordEncoder;
-
     @Transactional
     public User_dto create_us(UserRequest_Dto userdto)
     {
-        if (ur.existsByEmail(userdto.getEmail())) {
+        // Case-insensitive email check
+        if (ur.existsByEmailIgnoreCase(userdto.getEmail())) {
             throw new EmailAlreadyExistsException("Email already exists");
         }
-        if(ur.existsByname(userdto.getName()))
+        // Case-insensitive name check
+        if(ur.existsByUsernameIgnoreCase(userdto.getName())) {
             throw new UserAlreadyExistsException("Username already exists");
-        User user = new User();
-        if (userdto.getRole() == null || userdto.getRole().isEmpty()) {
-            user.setRoles(List.of(UserRoles.USER));
-        } else if ((userdto.getRole().equals("USER"))) {
-            user.setRoles(List.of(UserRoles.ADMIN));
         }
-        else if(userdto.getRole().equals("ADMIN"))
-            user.setRoles(List.of(UserRoles.ADMIN));
-        user.setName(userdto.getName());
-        user.setEmail(userdto.getEmail());
+        
+        User user = new User();
+        user.setRoles(List.of(UserRoles.USER));
+        user.setName(userdto.getName().trim());
+        user.setEmail(userdto.getEmail().trim().toLowerCase(Locale.ROOT));
         user.setPassword(passwordEncoder.encode(userdto.getPassword()));
+        
         Cart cart = new Cart();
         user.setCart(cart);
         cart.setUser(user);
-        ur.save(user);
-        return convertToDTO(user);
+        
+        User savedUser = ur.save(user);
+        return convertToDTO(savedUser);
     }
 
     public User_dto get_us(String username)
     {
-        User user=ur.findbyusername(username);
+        User user = ur.findbyusername(username);
         if (user == null)
-            throw new UserNotFoundException("user not found");
+            throw new UserNotFoundException("User not found");
         return convertToDTO(user);
     }
 
     public UserPageResponse getallusers(Pageable pageable)
     {
         Page<User> userPage = ur.findAll(pageable);
-        List<User_dto> userdtos  = userPage.getContent()
+        List<User_dto> userdtos = userPage.getContent()
                 .stream().map(this::convertToDTO).toList();
-        UserPageResponse response=new UserPageResponse();
+        UserPageResponse response = new UserPageResponse();
         response.setUser_dtos(userdtos);
         response.setCurrentPage(userPage.getNumber());
         response.setTotalPages(userPage.getTotalPages());
@@ -83,7 +83,7 @@ public class User_Service
 
     public User_dto get_us_by_id(Long id)
     {
-        User user= ur.findById(id).orElseThrow(()->new UserNotFoundException("user not found"));
+        User user = ur.findById(id).orElseThrow(() -> new UserNotFoundException("User not found"));
         return convertToDTO(user);
     }
 
@@ -92,25 +92,39 @@ public class User_Service
     {
         User us = ur.findbyusername(username);
         if (us == null)
-            throw new UserNotFoundException("user not found");
-        if (dto.getName() != null)
-            us.setName(dto.getName());
-        if (dto.getEmail() != null)
-            us.setEmail(dto.getEmail());
-        if (dto.getPassword() != null)
+            throw new UserNotFoundException("User not found");
+        
+        if (dto.getName() != null && !dto.getName().equals(us.getName())) {
+            String normalizedName = dto.getName().trim();
+            if(ur.existsByUsernameIgnoreCase(normalizedName)) {
+                throw new UserAlreadyExistsException("Username already exists");
+            }
+            us.setName(normalizedName);
+        }
+        
+        if (dto.getEmail() != null && !dto.getEmail().equals(us.getEmail())) {
+            String normalizedEmail = dto.getEmail().trim().toLowerCase(Locale.ROOT);
+            if(ur.existsByEmailIgnoreCase(normalizedEmail)) {
+                throw new EmailAlreadyExistsException("Email already exists");
+            }
+            us.setEmail(normalizedEmail);
+        }
+        
+        if (dto.getPassword() != null && !dto.getPassword().isEmpty()) {
             us.setPassword(passwordEncoder.encode(dto.getPassword()));
-        ur.save(us);
-
-        return convertToDTO(us);
+        }
+        
+        User savedUser = ur.save(us);
+        return convertToDTO(savedUser);
     }
 
     @Transactional
     public void delete_us(String name)
     {
-
-        User user=ur.findbyusername(name);
+        User user = ur.findbyusername(name);
         if (user == null)
-            throw new UserNotFoundException("user not found");
+            throw new UserNotFoundException("User not found");
+        
         if (user.getCart() != null) {
             user.getCart().setUser(null);
         }
@@ -123,7 +137,7 @@ public class User_Service
     @Transactional
     public void delete_us_by_id(Long id)
     {
-        User user=ur.findById(id).orElseThrow(()->new UserNotFoundException("user not found"));
+        User user = ur.findById(id).orElseThrow(() -> new UserNotFoundException("User not found"));
         if (user.getCart() != null) {
             user.getCart().setUser(null);
         }
@@ -132,8 +146,8 @@ public class User_Service
         }
         ur.delete(user);
     }
-    public OrderStatus getOrderStatus(String id) {
 
+    public OrderStatus getOrderStatus(String id) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
         return os.getUserOrderStatus(id, username);
@@ -146,9 +160,5 @@ public class User_Service
         userDto.setEmail(user.getEmail());
         userDto.setRoles(user.getRoles().stream().map(Enum::name).toList());
         return userDto;
-
     }
 }
-
-
-

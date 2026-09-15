@@ -4,9 +4,13 @@ import com.resend.Resend;
 import com.resend.core.exception.ResendException;
 import com.resend.services.emails.model.CreateEmailOptions;
 import com.resend.services.emails.model.CreateEmailResponse;
+import com.rmtech.ecom.Exception.EmailSendException;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
-public class EmailService { private final Resend resend;
+@Service
+public class EmailService {
+    private final Resend resend;
 
     @Value("${email.from}")
     private String from;
@@ -30,7 +34,7 @@ public class EmailService { private final Resend resend;
                     <p>Thank you for your order.</p>
 
                     <p>
-                        <strong>Order ID:</strong> %d
+                        <strong>Order ID:</strong> %s
                     </p>
 
                     <p>
@@ -62,7 +66,6 @@ public class EmailService { private final Resend resend;
                         .build();
 
         try {
-
             CreateEmailResponse response =
                     resend.emails().send(params);
 
@@ -71,9 +74,8 @@ public class EmailService { private final Resend resend;
             );
 
         } catch (ResendException e) {
-
-            throw new RuntimeException(
-                    "Failed to send order confirmation email",
+            throw new EmailSendException(
+                    "Failed to send order confirmation email to " + customerEmail,
                     e
             );
         }

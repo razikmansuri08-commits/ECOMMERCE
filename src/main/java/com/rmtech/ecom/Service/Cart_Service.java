@@ -35,9 +35,10 @@ public class Cart_Service
     @Transactional
     public Cart_Dto add_itm(String username, Long productId, int quantity)
     {
-        if(quantity<0)
-             throw new MethodArgumentInvalid("quantity cannot be negative");
-          Cart cart = getUserCart(username);
+        if (quantity <= 0) {
+            throw new MethodArgumentInvalid("quantity must be greater than zero");
+        }
+        Cart cart = getUserCart(username);
           Product product = pr.findById(productId).orElseThrow(() -> new ProductNotFoundException("product not found"));
           Optional<Cart_Items> existingItem = cart.getCart_items()
                   .stream()

@@ -8,6 +8,7 @@ import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -62,12 +63,22 @@ public class RedisConfig {
     public RedisTemplate<String,String> redisTemplate(RedisConnectionFactory redisConnectionFactory){
         RedisTemplate<String,String> template=new RedisTemplate<>();
         template.setConnectionFactory(redisConnectionFactory);
+        StringRedisSerializer serializer = new StringRedisSerializer();
+        template.setKeySerializer(serializer);
+        template.setValueSerializer(serializer);
+        template.setHashKeySerializer(serializer);
+        template.setHashValueSerializer(serializer);
         return template;
     }
     @Bean
     public RedisTemplate<String,Object> redisTemplate2(RedisConnectionFactory redisConnectionFactory){
         RedisTemplate<String,Object> template=new RedisTemplate<>();
         template.setConnectionFactory(redisConnectionFactory);
+        StringRedisSerializer keySerializer = new StringRedisSerializer();
+        template.setKeySerializer(keySerializer);
+        template.setHashKeySerializer(keySerializer);
+        template.setValueSerializer(new StringRedisSerializer());
+        template.setHashValueSerializer(new StringRedisSerializer());
         return template;
     }
 }

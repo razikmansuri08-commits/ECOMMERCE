@@ -11,5 +11,7 @@ public class Order_Dto
 {
     private String id;
 
+    private Double totalAmount;
+
     private List<Order_ItemsDto> items=new ArrayList<>();
 }

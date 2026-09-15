@@ -36,8 +36,8 @@ public class SecurityConfig {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/public/**","/auth/login", "/swagger-ui/**",
-                                "/swagger-ui.html","/v3/api-docs/**","/auth/refresh").permitAll()
+                        .requestMatchers("/public/**", "/auth/login", "/swagger-ui/**",
+                                "/swagger-ui.html", "/v3/api-docs/**").permitAll()
                         .requestMatchers("/auth/logout").authenticated()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
 

@@ -50,18 +50,8 @@ public class RefreshTokenService {
         return rawtoken;
     }
     public Optional<RefreshToken> findByRawToken(String token) {
-        String hash =
-                tokenHashUtil.hash(token);
-
-
-        RefreshToken refreshToken = refreshTokenRepository
-                .findByTokenHash(hash)
-                .orElseThrow(
-                        () -> new IllegalArgumentException(
-                                "Invalid refresh token"
-                        )
-                );
-        return Optional.of(refreshToken);
+        String hash = tokenHashUtil.hash(token);
+        return refreshTokenRepository.findByTokenHash(hash);
     }
 
     @Transactional
