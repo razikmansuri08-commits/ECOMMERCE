@@ -1,6 +1,6 @@
 package com.rmtech.ecom.Exception;
 
-import javax.naming.AuthenticationException;
+import org.springframework.security.core.AuthenticationException;
 
 public class JwtTokenInvalidException extends AuthenticationException{
     public JwtTokenInvalidException(String message) {

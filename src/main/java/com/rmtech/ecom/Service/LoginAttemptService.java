@@ -23,32 +23,53 @@ public class LoginAttemptService {
     }
 
     public String loginFailed(String username) {
-        String key= getKey(username);
-
-        Long attempts = redisTemplate.opsForValue().increment(key, 1);
-        redisTemplate.expire(key, LOCKED_DURATION);
-        Long remaining_attempts=5-attempts;
-        return "Number of RemainingAttempts: " + remaining_attempts;
+        String key = getKey(username);
+        try {
+            Long attempts = redisTemplate.opsForValue().increment(key, 1);
+            redisTemplate.expire(key, LOCKED_DURATION);
+            long remainingAttempts = Math.max(0, MAX_LOGIN_ATTEMPTS - (attempts == null ? 0 : attempts));
+            return "Number of RemainingAttempts: " + remainingAttempts;
+        } catch (RuntimeException ex) {
+            log.warn("loginFailed counter unavailable for {} (Redis down), failing open", username, ex);
+            return "Number of RemainingAttempts: unknown (rate limiting unavailable)";
+        }
     }
 
     public void loginSucces(String username) {
-        String key= getKey(username);
-        redisTemplate.delete(key);
+        String key = getKey(username);
+        try {
+            redisTemplate.delete(key);
+        } catch (RuntimeException ex) {
+            log.warn("loginSucces cleanup failed for {} (Redis down)", username, ex);
+        }
     }
 
     public boolean isLocked(String username) {
-        String key= getKey(username);
-        Object attempts = redisTemplate.opsForValue().get(key);
-        log.info("Attempts: " + attempts);
-        if(attempts == null) {
+        String key = getKey(username);
+        try {
+            Object attempts = redisTemplate.opsForValue().get(key);
+            log.info("Attempts: " + attempts);
+            if (attempts == null) {
+                return false;
+            }
+            return Integer.parseInt(attempts.toString()) >= MAX_LOGIN_ATTEMPTS;
+        } catch (NumberFormatException ex) {
+            log.warn("Corrupt login-attempt counter for {}", username, ex);
+            return false;
+        } catch (RuntimeException ex) {
+            log.warn("isLocked check failed for {} (Redis down), failing open", username, ex);
             return false;
         }
-        return Integer.parseInt(attempts.toString()) >= MAX_LOGIN_ATTEMPTS;
     }
 
     public Long getremainingLockTime(String username) {
-        Long remainingLockTime = redisTemplate.getExpire(getKey(username));
-        return remainingLockTime==null?0:remainingLockTime;
+        try {
+            Long remainingLockTime = redisTemplate.getExpire(getKey(username));
+            return remainingLockTime == null ? 0 : Math.max(0, remainingLockTime);
+        } catch (RuntimeException ex) {
+            log.warn("getremainingLockTime failed for {} (Redis down)", username, ex);
+            return 0L;
+        }
     }
 
 }

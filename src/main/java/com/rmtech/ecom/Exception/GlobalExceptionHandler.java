@@ -72,7 +72,7 @@ public class GlobalExceptionHandler
         Error_ResponseDto er=new Error_ResponseDto
                 (LocalDateTime.now(),
                         ex.getMessage(),
-                        "REFRESH_TOKEN_EXCEPTION",
+                        "REFRESH_TOKEN_Erequest.getRequestURI()CEPTION",
                         403,
                         request.getRequestURI());
         return ResponseEntity.status(403).body(er);
@@ -268,18 +268,18 @@ public class GlobalExceptionHandler
                         request.getRequestURI()
                 ));
     }
-//    @ExceptionHandler(Exception.class)
-//    public ResponseEntity<Error_ResponseDto> handleGlobalException(Exception ex,HttpServletRequest request)
-//    {
-//        log.error("Unexpected exception", ex);
-//
-//        return ResponseEntity.status(500)
-//                .body(new Error_ResponseDto(
-//                        LocalDateTime.now(),
-//                        "An unexpected error occurred",
-//                        "INTERNAL_SERVER_ERROR",
-//                        500,
-//                        request.getRequestURI()
-//                ));
-//    }
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Error_ResponseDto> handleGlobalException(Exception ex,HttpServletRequest request)
+    {
+        log.error("Unexpected exception", ex);
+
+        return ResponseEntity.status(500)
+                .body(new Error_ResponseDto(
+                        LocalDateTime.now(),
+                        "An unexpected error occurred",
+                        "INTERNAL_SERVER_ERROR",
+                        500,
+                        request.getRequestURI()
+                ));
+    }
 }

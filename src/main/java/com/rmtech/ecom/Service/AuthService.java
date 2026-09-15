@@ -96,18 +96,23 @@ public class AuthService {
 
         String header = httpRequest.getHeader("Authorization");
 
-        if (header == null) {
+        if (header == null || !header.startsWith("Bearer ")) {
             throw new IllegalArgumentException("No token provided");
         }
 
-        if (header.startsWith("Bearer ")) {
-            String accessToken = header.substring(7);
+        String accessToken = header.substring(7);
+        if (accessToken.isBlank()) {
+            throw new IllegalArgumentException("No token provided");
+        }
+        try {
             tokenBlacklistService.addTokenToBlacklist(
                     accessToken,
                     jwtUtil.extractExpiration(accessToken)
             );
+        } catch (io.jsonwebtoken.JwtException ex) {
+            throw new JwtTokenInvalidException("Token is invalid");
         }
-        RefreshToken refreshToken=refreshTokenService
+        RefreshToken refreshToken = refreshTokenService
                 .findByRawToken(refreshTokenRequest.getRefreshToken())
                 .orElseThrow(
                         () -> new IllegalArgumentException(
