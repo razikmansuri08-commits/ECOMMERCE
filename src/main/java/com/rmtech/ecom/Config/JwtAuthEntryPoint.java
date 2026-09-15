@@ -34,7 +34,7 @@ public class JwtAuthEntryPoint implements AuthenticationEntryPoint {
                 new Error_ResponseDto(
                         LocalDateTime.now(),
                         authException.getMessage(),
-                        "UNAUTHORIZED",
+                        "UNAUTHORIZED_REQUEST",
                         401,
                         request.getRequestURI()
                 );
