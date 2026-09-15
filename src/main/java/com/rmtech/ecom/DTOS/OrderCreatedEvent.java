@@ -5,6 +5,12 @@ public record OrderCreatedEvent(
         Long userId,
         String username,
         String email,
-        Double totalAmount
+        Double totalAmount,
+        java.time.LocalDateTime createdAt
 ) {
+    public OrderCreatedEvent {
+        if (createdAt == null) {
+            createdAt = java.time.LocalDateTime.now();
+        }
+    }
 }

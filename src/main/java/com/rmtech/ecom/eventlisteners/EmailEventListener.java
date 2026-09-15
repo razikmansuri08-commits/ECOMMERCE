@@ -10,14 +10,14 @@ import org.springframework.transaction.event.TransactionalEventListener;
 
 @Component
 @Slf4j
-public class OrderNotificationListener {
+public class EmailEventListener {
     private final EmailService emailService;
 
-    public OrderNotificationListener(EmailService emailService) {
+    public EmailEventListener(EmailService emailService) {
         this.emailService = emailService;
     }
 
-    @Async("notificationExecutor")
+    @Async("emailExecutor")
     @TransactionalEventListener(
             phase = TransactionPhase.AFTER_COMMIT
     )
@@ -36,9 +36,6 @@ public class OrderNotificationListener {
         } catch (Exception e) {
             log.error("Failed to send order confirmation email for order: {}", 
                     event.orderId(), e);
-            // Log the error but don't rethrow - the order is already placed
-            // In production, you might want to queue this for retry
         }
     }
-
 }

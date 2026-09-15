@@ -122,7 +122,8 @@ public class Order_Service {
                     user.getId(),
                     user.getName(),
                     user.getEmail(),
-                    totalAmount
+                    totalAmount,
+                    LocalDateTime.now()
             ));
             log.info("Order created event published for order: {}", savedOrder.getOrderId());
         } catch (Exception e) {
@@ -165,7 +166,24 @@ public class Order_Service {
         }
 
         order.setStatus(status);
-        or.save(order);
+        Orders updatedOrder = or.save(order);
+
+        // Publish event for notifications and analytics
+        try {
+            eventPublisher.publishEvent(new OrderStatusUpdatedEvent(
+                    order.getOrderId(),
+                    order.getUser().getId(),
+                    order.getUser().getName(),
+                    order.getUser().getEmail(),
+                    previousStatus.name(),
+                    status.name(),
+                    LocalDateTime.now()
+            ));
+            log.info("Order status updated event published: {} -> {}", previousStatus, status);
+        } catch (Exception e) {
+            log.error("Failed to publish order status updated event for order: {}", orderId, e);
+        }
+
         return status;
     }
 
