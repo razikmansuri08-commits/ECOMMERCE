@@ -27,6 +27,7 @@ public class ProductRequestDto implements Serializable {
     @Positive
     private Long categoryid;
 
-
-
+    @NotNull(message = "Initial stock quantity is required")
+    @Positive
+    private int initialStock;
 }

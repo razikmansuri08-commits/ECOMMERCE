@@ -40,4 +40,5 @@ public class OrderNotificationListener {
             // In production, you might want to queue this for retry
         }
     }
+
 }

@@ -5,7 +5,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serializable;
-import java.math.BigDecimal;
 
 @Entity
 @Getter
@@ -26,6 +25,16 @@ public class Product implements Serializable {
     @Column(nullable = false)
     private Double price;
 
+    @OneToOne(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Inventory inventory;
+
     @Version
     private Long version;
+
+    public void setInventory(Inventory inventory) {
+        this.inventory = inventory;
+        if (inventory != null) {
+            inventory.setProduct(this);
+        }
+    }
 }

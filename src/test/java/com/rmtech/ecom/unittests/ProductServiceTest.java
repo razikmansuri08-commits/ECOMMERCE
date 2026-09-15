@@ -8,6 +8,7 @@ import com.rmtech.ecom.Entities.Category;
 import com.rmtech.ecom.Entities.Product;
 import com.rmtech.ecom.Exception.ProductNotFoundException;
 import com.rmtech.ecom.Repositories.Category_Repo;
+import com.rmtech.ecom.Repositories.Inventory_Repo;
 import com.rmtech.ecom.Repositories.Product_Repo;
 import com.rmtech.ecom.Service.Product_Service;
 import org.junit.jupiter.api.Test;
@@ -40,6 +41,9 @@ import static org.mockito.Mockito.*;
 
     @Mock
     private Product_Repo product_Repo;
+
+    @Mock
+    private Inventory_Repo inventory_Repo;
 
     @InjectMocks
     private Product_Service productService;
@@ -89,6 +93,7 @@ import static org.mockito.Mockito.*;
         productDto.setName("phone");
         productDto.setPrice(100.0);
         productDto.setCategoryid(2L);
+        productDto.setInitialStock(50);
 
 
         when(category_Repo.findById(2L)).thenReturn(Optional.of(category));

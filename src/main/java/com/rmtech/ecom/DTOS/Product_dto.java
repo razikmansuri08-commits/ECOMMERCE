@@ -14,5 +14,6 @@ public class Product_dto implements Serializable {
     private String parentcategory;
     private Long id;
     private double price;
-
+    private int stockQuantity;
+    private int reservedQuantity;
 }

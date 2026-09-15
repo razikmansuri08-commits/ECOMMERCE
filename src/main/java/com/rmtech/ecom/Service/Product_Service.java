@@ -5,6 +5,7 @@ import com.rmtech.ecom.DTOS.ProductRequestDto;
 import com.rmtech.ecom.DTOS.ProductUpdate_Dto;
 import com.rmtech.ecom.DTOS.Product_dto;
 import com.rmtech.ecom.Entities.Category;
+import com.rmtech.ecom.Entities.Inventory;
 import com.rmtech.ecom.Entities.Product;
 import com.rmtech.ecom.Exception.MethodArgumentInvalid;
 import com.rmtech.ecom.Exception.ProductNotFoundException;
@@ -30,10 +31,12 @@ public class Product_Service
 {
     private final Product_Repo prr;
     private final Category_Repo crr;
+    private final Inventory_Service inventoryService;
 
-    public Product_Service(Product_Repo prr, Category_Repo crr) {
+    public Product_Service(Product_Repo prr, Category_Repo crr, Inventory_Service inventoryService) {
         this.prr = prr;
         this.crr = crr;
+        this.inventoryService = inventoryService;
     }
 
 
@@ -43,21 +46,38 @@ public class Product_Service
     }
 
     @Transactional
-    public Product_dto create_prod(ProductRequestDto prd){
+    public Product_dto create_prod(ProductRequestDto prd) {
 
-        if(prd.getName()==null)
+        if (prd.getName() == null || prd.getName().trim().isEmpty()) {
             throw new MethodArgumentInvalid("Product name is required");
-        if(prd.getPrice()<=0)
+        }
+        if (prd.getPrice() <= 0) {
             throw new MethodArgumentInvalid("Product price must be greater than 0");
+        }
+        if (prd.getInitialStock() < 0) {
+            throw new MethodArgumentInvalid("Initial stock cannot be negative");
+        }
 
-        Category category=crr.findById(prd.getCategoryid()).orElseThrow(()->new ProductNotFoundException("Category not found"));
+        Category category = crr.findById(prd.getCategoryid())
+                .orElseThrow(() -> new ProductNotFoundException("Category not found"));
+
+        // Create Product
         Product product = new Product();
         product.setCategory(category);
-        product.setName(prd.getName());
+        product.setName(prd.getName().trim());
         product.setPrice(prd.getPrice());
-        Product pr=prr.save(product);
-        return convertToDTO(pr);
 
+        // Create Inventory for this product
+        Inventory inventory = new Inventory();
+        inventory.setQuantity(prd.getInitialStock());
+        inventory.setReservedQuantity(0);
+        product.setInventory(inventory);
+
+        // Save product (which will cascade save inventory due to @OneToOne cascade)
+        Product savedProduct = prr.save(product);
+        log.info("Product created with id: {} and initial stock: {}", savedProduct.getId(), prd.getInitialStock());
+
+        return convertToDTO(savedProduct);
     }
 
     @Cacheable( key = "#id",value = "products")
@@ -208,13 +228,19 @@ public class Product_Service
         productDto.setId(product.getId());
 
         productDto.setName(product.getName());
-        if(product.getCategory().getParentCategory()!=null) {
-            productDto.setParentcategory((product.getCategory().getParentCategory().getName()));
+        if (product.getCategory().getParentCategory() != null) {
+            productDto.setParentcategory(product.getCategory().getParentCategory().getName());
         }
         productDto.setCategory(product.getCategory().getName());
         productDto.setPrice(product.getPrice());
+
+        // Include inventory info in DTO
+        if (product.getInventory() != null) {
+            productDto.setStockQuantity(product.getInventory().getQuantity());
+            productDto.setReservedQuantity(product.getInventory().getReservedQuantity());
+        }
+
         return productDto;
     }
-
 }
 
