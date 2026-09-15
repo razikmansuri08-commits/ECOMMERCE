@@ -12,8 +12,11 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 @RestControllerAdvice
@@ -267,6 +270,20 @@ public class GlobalExceptionHandler
                         400,
                         request.getRequestURI()
                 ));
+    }
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Object> handleAll(Exception ex, HttpServletRequest request) {
+        StringWriter sw = new StringWriter();
+        ex.printStackTrace(new PrintWriter(sw));
+
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("exception", ex.getClass().getName());
+        body.put("message", ex.getMessage());
+        body.put("path", request.getRequestURI());
+        body.put("trace", sw.toString());
+
+        return ResponseEntity.status(500).body(body);
     }
 //    @ExceptionHandler(Exception.class)
 //    public ResponseEntity<Error_ResponseDto> handleGlobalException(Exception ex,HttpServletRequest request)
