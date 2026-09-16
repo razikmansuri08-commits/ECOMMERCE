@@ -5,7 +5,8 @@ WORKDIR /app
 COPY pom.xml .
 COPY src ./src
 
-RUN mvn -B clean package -DskipTests -Dmaven.test.skip=true
+# Fail fast with full error output instead of a truncated tail.
+RUN mvn -B -e clean package -DskipTests -Dmaven.test.skip=true
 
 FROM eclipse-temurin:21-jdk
 

@@ -1,5 +1,6 @@
 package com.rmtech.ecom.Service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rmtech.ecom.DTOS.*;
 import com.rmtech.ecom.Entities.*;
@@ -118,34 +119,37 @@ public class Order_Service {
         cart.getCart_items().clear();
         cs.get_crt(username); // Trigger cart save
         
-        // Publish order created event for email notification
-        try {
-            OrderCreatedEvent event = new OrderCreatedEvent(
-                    savedOrder.getOrderId(),
-                    user.getId(),
-                    user.getName(),
-                    user.getEmail(),
-                    totalAmount,
-                    LocalDateTime.now()
-            );
-            OutboxEvent outbox = new OutboxEvent();
+        // Publish order created event via transactional outbox (same TX as order).
+        // Must NOT swallow exceptions: if the outbox write fails the order
+        // must roll back, otherwise the event is silently lost.
+        OrderCreatedEvent event = new OrderCreatedEvent(
+                savedOrder.getOrderId(),
+                user.getId(),
+                user.getName(),
+                user.getEmail(),
+                totalAmount,
+                LocalDateTime.now()
+        );
+        OutboxEvent outbox = new OutboxEvent();
 
-            outbox.setEventId(UUID.randomUUID());
-            outbox.setAggregateId(savedOrder.getOrderId());
-            outbox.setAggregateType("ORDER");
-            outbox.setEventType("ORDER_CREATED");
+        outbox.setEventId(UUID.randomUUID());
+        outbox.setAggregateId(savedOrder.getOrderId());
+        outbox.setAggregateType("ORDER");
+        outbox.setEventType("ORDER_CREATED");
+        try {
             outbox.setPayload(
                     objectMapper.writeValueAsString(event)
             );
-            outbox.setStatus(OutboxEvent.OutboxStatus.PENDING);
-            outbox.setCreatedAt(LocalDateTime.now());
-
-            outboxRepository.save(outbox);
-            log.info("Order created event published for order: {}", savedOrder.getOrderId());
-        } catch (Exception e) {
-            log.error("Failed to publish order created event for order: {}", savedOrder.getOrderId(), e);
-            // Don't fail the order creation if event publishing fails
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException(
+                    "Failed to serialize OrderCreatedEvent for order: " + savedOrder.getOrderId(), e);
         }
+        outbox.setStatus(OutboxEvent.OutboxStatus.PENDING);
+        outbox.setCreatedAt(LocalDateTime.now());
+
+        outboxRepository.save(outbox);
+        log.info("[thread={}] Order created event staged in outbox for order: {}",
+                Thread.currentThread().getName(), savedOrder.getOrderId());
 
         return convertToDTO(savedOrder);
     }
