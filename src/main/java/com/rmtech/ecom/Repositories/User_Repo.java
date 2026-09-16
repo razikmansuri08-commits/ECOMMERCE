@@ -13,11 +13,14 @@ public interface User_Repo extends JpaRepository<User, Long>, JpaSpecificationEx
     @Query("SELECT u FROM User u WHERE LOWER(u.name) = LOWER(:username)")
     User findbyusername(@Param("username") String username);
 
-    @Query("SELECT u FROM User u WHERE LOWER(u.name) = LOWER(:username)")
-    boolean existsByUsernameIgnoreCase(@Param("username") String username);
+    // Derived exists queries (no @Query): Spring Data implements these as
+    // SELECT 1 ... LIMIT 1 and never returns null, so the JDK proxy never
+    // hits "Null return value from advice does not match primitive return type".
+    @Query("SELECT 1 FROM User u WHERE LOWER(u.name) = LOWER(:username)")
+    boolean existsByUsernameIgnoreCase(String username);
 
-    @Query("SELECT u FROM User u WHERE LOWER(u.email) = LOWER(:email)")
-    boolean existsByEmailIgnoreCase(@Param("email") String email);
+    @Query("SELECT 1 FROM User u WHERE LOWER(u.email) = LOWER(:email)")
+    boolean existsByEmailIgnoreCase(String email);
 
     @Query("SELECT u FROM User u WHERE u.id = :id")
     User findbyid(@Param("id") Long id);

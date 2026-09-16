@@ -22,6 +22,7 @@ public class Category_Service {
     }
 
     @Transactional
+    @CacheEvict(value = "categories", allEntries = true)
     public CategoryDto createCategory(CategoryDto cat)
     {
         if (category_Repo.existsByName(cat.getName())) {
@@ -58,9 +59,7 @@ public class Category_Service {
         }
         return categoryDto;
     }
-    @Cacheable
-(value = "categories", key = "#pageable.pageNumber + '_' + #pageable.pageSize +'_' + #pageable.sort")
-    @CacheEvict(value = "categories", allEntries = true)
+    @Cacheable(value = "categories", key = "#pageable.pageNumber + '_' + #pageable.pageSize +'_' + #pageable.sort")
     public CategoryPageResponse getallcategories(Pageable pageable)
     {
         Page<Category> categoryPage = category_Repo.findAll(pageable);
@@ -76,7 +75,6 @@ public class Category_Service {
 
 
     @Cacheable(value = "ParentCategory", key = "#id")
-    @CacheEvict(value = "ParentCategory", allEntries = true)
     public CategoryTreeDto getcat_tree(Long id)
     { Category category = category_Repo.findCategorywithchildren(id)
             .orElseThrow(() -> new RuntimeException("Category not found"));

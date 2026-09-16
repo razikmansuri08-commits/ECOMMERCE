@@ -2,6 +2,7 @@ package com.rmtech.ecom.Config;
 
 import org.springframework.cache.Cache;
 import org.springframework.cache.interceptor.CacheErrorHandler;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
@@ -15,6 +16,7 @@ import java.util.Map;
 
 
 @Configuration
+@Slf4j
 public class RedisConfig {
 
     @Bean
@@ -23,22 +25,31 @@ public class RedisConfig {
 
             @Override
             public void handleCacheGetError(RuntimeException exception, Cache cache, Object key) {
-                System.out.println("Redis GET failed: " + exception.getMessage());
+                // Fail-open: log and let the advised method execute against the DB.
+                // IMPORTANT: never return null / swallow here in a way that makes a
+                // primitive-boolean repository-style check read as "false-exists".
+                // Spring's CacheAspectSupport treats a get-error as a cache miss and
+                // proceeds to the target method, so just logging preserves pjp.proceed().
+                log.warn("Redis GET failed on cache '{}' key '{}', falling through to DB: {}",
+                        cache.getName(), key, exception.toString());
             }
 
             @Override
             public void handleCachePutError(RuntimeException exception, Cache cache, Object key, Object value) {
-                System.out.println("Redis PUT failed: " + exception.getMessage());
+                log.warn("Redis PUT failed on cache '{}' key '{}', continuing without caching: {}",
+                        cache.getName(), key, exception.toString());
             }
 
             @Override
             public void handleCacheEvictError(RuntimeException exception, Cache cache, Object key) {
-                System.out.println("Redis EVICT failed: " + exception.getMessage());
+                log.warn("Redis EVICT failed on cache '{}' key '{}': {}",
+                        cache.getName(), key, exception.toString());
             }
 
             @Override
             public void handleCacheClearError(RuntimeException exception, Cache cache) {
-                System.out.println("Redis CLEAR failed: " + exception.getMessage());
+                log.warn("Redis CLEAR failed on cache '{}': {}",
+                        cache.getName(), exception.toString());
             }
         };
     }

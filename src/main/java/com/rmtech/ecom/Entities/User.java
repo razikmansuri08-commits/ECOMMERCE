@@ -1,6 +1,7 @@
 package com.rmtech.ecom.Entities;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.convert.DataSizeUnit;
@@ -21,15 +22,15 @@ public class User
     @Id
     @GeneratedValue
     @Column(name = "user_id")
-    private Long Id;
+    private Long id;
 
-    @NonNull
+    @NotBlank
     private String name;
 
-    @NonNull
+    @NotBlank
     private String password;
 
-    @NonNull
+    @NotBlank
     private String email;
 
 
