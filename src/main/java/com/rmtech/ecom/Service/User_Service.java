@@ -3,6 +3,7 @@ package com.rmtech.ecom.Service;
 import com.rmtech.ecom.DTOS.*;
 import com.rmtech.ecom.Entities.*;
 import com.rmtech.ecom.Exception.EmailAlreadyExistsException;
+import com.rmtech.ecom.Exception.MethodArgumentInvalid;
 import com.rmtech.ecom.Exception.OrderNotFoundException;
 import com.rmtech.ecom.Exception.UserAlreadyExistsException;
 import com.rmtech.ecom.Exception.UserNotFoundException;
@@ -38,18 +39,18 @@ public class User_Service
     public User_dto create_us(UserRequest_Dto userdto)
     {
         // Case-insensitive email check
-        if (ur.existsByEmail(userdto.getEmail())) {
+        if (Boolean.TRUE.equals(ur.existsByEmailIgnoreCase(userdto.getEmail()))) {
             throw new EmailAlreadyExistsException("Email already exists");
         }
         // Case-insensitive name check
-        if(ur.existsByUsername(userdto.getName())) {
+        if(Boolean.TRUE.equals(ur.existsByUsernameIgnoreCase(userdto.getName()))) {
             throw new UserAlreadyExistsException("Username already exists");
         }
         
         User user = new User();
         user.setRoles(List.of(UserRoles.USER));
-        user.setName(userdto.getName());
-        user.setEmail(userdto.getEmail());
+        user.setName(userdto.getName() == null ? null : userdto.getName().trim());
+        user.setEmail(userdto.getEmail() == null ? null : userdto.getEmail().trim().toLowerCase(Locale.ROOT));
         user.setPassword(passwordEncoder.encode(userdto.getPassword()));
         
         Cart cart = new Cart();
@@ -96,7 +97,7 @@ public class User_Service
         
         if (dto.getName() != null && !dto.getName().equals(us.getName())) {
             String normalizedName = dto.getName().trim();
-            if(ur.existsByUsername(normalizedName)) {
+            if(Boolean.TRUE.equals(ur.existsByUsername(normalizedName))) {
                 throw new UserAlreadyExistsException("Username already exists");
             }
             us.setName(normalizedName);
@@ -104,7 +105,7 @@ public class User_Service
         
         if (dto.getEmail() != null && !dto.getEmail().equals(us.getEmail())) {
             String normalizedEmail = dto.getEmail().trim().toLowerCase(Locale.ROOT);
-            if(ur.existsByEmail(normalizedEmail)) {
+            if(Boolean.TRUE.equals(ur.existsByEmail(normalizedEmail))) {
                 throw new EmailAlreadyExistsException("Email already exists");
             }
             us.setEmail(normalizedEmail);

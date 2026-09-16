@@ -14,7 +14,6 @@ import java.util.List;
 @Setter
 @Entity
 @Table(name = "users", uniqueConstraints = {
-        @UniqueConstraint(columnNames = "name"),
         @UniqueConstraint(columnNames = "email")
 })
 public class User

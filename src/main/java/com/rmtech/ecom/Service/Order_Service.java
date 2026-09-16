@@ -1,11 +1,13 @@
 package com.rmtech.ecom.Service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rmtech.ecom.DTOS.*;
 import com.rmtech.ecom.Entities.*;
 import com.rmtech.ecom.Exception.InvalidOrderStatusException;
 import com.rmtech.ecom.Exception.OrderNotFoundException;
 import com.rmtech.ecom.Exception.UserNotFoundException;
 import com.rmtech.ecom.Repositories.Order_Repo;
+import com.rmtech.ecom.Repositories.OutboxEventRepository;
 import com.rmtech.ecom.Repositories.User_Repo;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
@@ -19,10 +21,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -32,13 +31,17 @@ public class Order_Service {
     private final Cart_Service cs;
     private final Inventory_Service is;
     private final ApplicationEventPublisher eventPublisher;
+    private final OutboxEventRepository outboxRepository;
+    private final ObjectMapper objectMapper;
 
-    public Order_Service(Order_Repo or, User_Repo ur, Cart_Service cs, Inventory_Service is, ApplicationEventPublisher eventPublisher) {
+    public Order_Service(Order_Repo or, User_Repo ur, Cart_Service cs, Inventory_Service is, ApplicationEventPublisher eventPublisher, OutboxEventRepository outboxRepository, ObjectMapper objectMapper) {
         this.or = or;
         this.ur = ur;
         this.cs = cs;
         this.is = is;
         this.eventPublisher = eventPublisher;
+        this.outboxRepository = outboxRepository;
+        this.objectMapper = objectMapper;
     }
     private static final Map<OrderStatus,
             Set<OrderStatus>> ALLOWED_TRANSITIONS =
@@ -117,14 +120,27 @@ public class Order_Service {
         
         // Publish order created event for email notification
         try {
-            eventPublisher.publishEvent(new OrderCreatedEvent(
+            OrderCreatedEvent event = new OrderCreatedEvent(
                     savedOrder.getOrderId(),
                     user.getId(),
                     user.getName(),
                     user.getEmail(),
                     totalAmount,
                     LocalDateTime.now()
-            ));
+            );
+            OutboxEvent outbox = new OutboxEvent();
+
+            outbox.setEventId(UUID.randomUUID());
+            outbox.setAggregateId(savedOrder.getOrderId());
+            outbox.setAggregateType("ORDER");
+            outbox.setEventType("ORDER_CREATED");
+            outbox.setPayload(
+                    objectMapper.writeValueAsString(event)
+            );
+            outbox.setStatus(OutboxEvent.OutboxStatus.PENDING);
+            outbox.setCreatedAt(LocalDateTime.now());
+
+            outboxRepository.save(outbox);
             log.info("Order created event published for order: {}", savedOrder.getOrderId());
         } catch (Exception e) {
             log.error("Failed to publish order created event for order: {}", savedOrder.getOrderId(), e);

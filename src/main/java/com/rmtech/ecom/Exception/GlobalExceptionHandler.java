@@ -83,6 +83,57 @@ public class GlobalExceptionHandler
 
 
 
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ValidationErrorResponse_Dto> handleBeanValidation(
+            MethodArgumentNotValidException ex, HttpServletRequest request)
+    {
+        Map<String, String> fieldErrors = new HashMap<>();
+        ex.getBindingResult().getFieldErrors()
+                .forEach(fe -> fieldErrors.put(fe.getField(), fe.getDefaultMessage()));
+        return ResponseEntity.status(400).body(new ValidationErrorResponse_Dto(
+                LocalDateTime.now(),
+                "Validation failed",
+                "BAD_REQUEST",
+                400,
+                fieldErrors,
+                request.getRequestURI()
+        ));
+    }
+
+    @ExceptionHandler(jakarta.validation.ConstraintViolationException.class)
+    public ResponseEntity<ValidationErrorResponse_Dto> handleConstraintViolation(
+            jakarta.validation.ConstraintViolationException ex, HttpServletRequest request)
+    {
+        Map<String, String> fieldErrors = new HashMap<>();
+        ex.getConstraintViolations()
+                .forEach(cv -> fieldErrors.put(cv.getPropertyPath().toString(), cv.getMessage()));
+        return ResponseEntity.status(400).body(new ValidationErrorResponse_Dto(
+                LocalDateTime.now(),
+                "Validation failed",
+                "BAD_REQUEST",
+                400,
+                fieldErrors,
+                request.getRequestURI()
+        ));
+    }
+
+    @ExceptionHandler(org.springframework.transaction.TransactionSystemException.class)
+    public ResponseEntity<?> handleTransactionSystem(org.springframework.transaction.TransactionSystemException ex, HttpServletRequest request)
+    {
+        Throwable cause = ex.getMostSpecificCause();
+        if (cause instanceof jakarta.validation.ConstraintViolationException cve) {
+            return handleConstraintViolation(cve, request);
+        }
+        log.error("Transaction failed", ex);
+        return ResponseEntity.status(400).body(new Error_ResponseDto(
+                LocalDateTime.now(),
+                cause != null ? cause.getMessage() : ex.getMessage(),
+                "BAD_REQUEST",
+                400,
+                request.getRequestURI()
+        ));
+    }
+
     @ExceptionHandler(MethodArgumentInvalid.class)
     public ResponseEntity<?> handleValidationException(
             MethodArgumentInvalid ex,HttpServletRequest request)

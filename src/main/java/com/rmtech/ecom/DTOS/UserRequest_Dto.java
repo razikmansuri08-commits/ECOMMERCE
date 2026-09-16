@@ -28,7 +28,6 @@ public class UserRequest_Dto {
 
     @NotBlank(message = "Email is required")
     @Email(message = "Please enter a valid email address")
-    @UniqueElements
     private String email;
 
     @NotBlank(message = "Password is required")

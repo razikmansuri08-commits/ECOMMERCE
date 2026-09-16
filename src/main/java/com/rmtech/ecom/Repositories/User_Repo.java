@@ -13,19 +13,36 @@ public interface User_Repo extends JpaRepository<User, Long>, JpaSpecificationEx
     @Query("SELECT u FROM User u WHERE LOWER(u.name) = LOWER(:username)")
     User findbyusername(@Param("username") String username);
 
-    // Derived exists queries (no @Query): Spring Data implements these as
-    // SELECT 1 ... LIMIT 1 and never returns null, so the JDK proxy never
-    // hits "Null return value from advice does not match primitive return type".
-    @Query("SELECT 1 FROM User u WHERE LOWER(u.name) = LOWER(:username)")
-    boolean existsByUsername(String username);
+    // ------------------------------------------------------------------
+    // Externalised existence checks.
+    //
+    // Why @Query + Boolean wrapper instead of derived `boolean existsBy...`?
+    // 1. The entity field is `name`, not `username`, so a derived
+    //    `existsByUsername...` cannot be resolved (no property `username`
+    //    on User) and fails bootstrap with "No property username found".
+    //    An explicit JPQL query decouples the method name from the field.
+    // 2. `SELECT CASE WHEN COUNT(u) > 0 THEN TRUE ELSE FALSE END` always
+    //    returns non-null TRUE/FALSE (never null), and the `Boolean`
+    //    wrapper means even if an AOP advice (cache/tx) returns null the
+    //    JDK proxy will not throw:
+    //    "Null return value from advice does not match primitive return
+    //    type". Callers must use Boolean.TRUE.equals(...) to null-guard.
+    // ------------------------------------------------------------------
 
-    @Query("SELECT 1 FROM User u WHERE LOWER(u.email) = LOWER(:email)")
-    boolean existsByEmail(String email);
+    @Query("SELECT CASE WHEN COUNT(u) > 0 THEN TRUE ELSE FALSE END FROM User u WHERE u.email = :email")
+    Boolean existsByEmail(@Param("email") String email);
+
+    @Query("SELECT CASE WHEN COUNT(u) > 0 THEN TRUE ELSE FALSE END FROM User u WHERE u.name = :username")
+    Boolean existsByUsername(@Param("username") String username);
+
+    @Query("SELECT CASE WHEN COUNT(u) > 0 THEN TRUE ELSE FALSE END FROM User u WHERE LOWER(u.email) = LOWER(:email)")
+    Boolean existsByEmailIgnoreCase(@Param("email") String email);
+
+    @Query("SELECT CASE WHEN COUNT(u) > 0 THEN TRUE ELSE FALSE END FROM User u WHERE LOWER(u.name) = LOWER(:username)")
+    Boolean existsByUsernameIgnoreCase(@Param("username") String username);
 
     @Query("SELECT u FROM User u WHERE u.id = :id")
     User findbyid(@Param("id") Long id);
-
-//    boolean existsByEmail(String email);
 
     Page<User> findAll(Pageable pageable);
 }
