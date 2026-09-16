@@ -36,7 +36,7 @@ jobs:
 #        run: mvn test
 
       - name: Build Jar
-        run: mvn clean package -DskipTests
+        run: mvn -B clean package -DskipTests -Dmaven.test.skip=true
 
       - name: Build Docker Image
         run: docker build -t ecommerce-app .

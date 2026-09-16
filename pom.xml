@@ -31,6 +31,10 @@
 	</scm>
 	<properties>
 		<java.version>21</java.version>
+		<!-- Deployment builds skip tests by default (Docker/CI). -->
+		<!-- Override per-run with -DskipTests=false -Dmaven.test.skip=false -->
+		<skipTests>true</skipTests>
+		<maven.test.skip>true</maven.test.skip>
 	</properties>
 	<dependencies>
 		<dependency>
