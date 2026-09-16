@@ -22,20 +22,22 @@ public class EmailEventListener {
             phase = TransactionPhase.AFTER_COMMIT
     )
     public void handleOrderCreated(OrderCreatedEvent event) {
+        String thread = Thread.currentThread().getName();
         try {
-            log.info("Processing order confirmation email for order: {}, user: {}", 
-                    event.orderId(), event.username());
-            
+            log.info("[thread={}] Processing order confirmation email for order: {}, user: {}",
+                    thread, event.orderId(), event.username());
+
             emailService.sendOrderConfirmation(
                     event.email(),
                     event.orderId(),
                     event.totalAmount()
             );
-            
-            log.info("Order confirmation email sent successfully for order: {}", event.orderId());
+
+            log.info("[thread={}] Order confirmation email sent successfully for order: {}",
+                    Thread.currentThread().getName(), event.orderId());
         } catch (Exception e) {
-            log.error("Failed to send order confirmation email for order: {}", 
-                    event.orderId(), e);
+            log.error("[thread={}] Failed to send order confirmation email for order: {}",
+                    Thread.currentThread().getName(), event.orderId(), e);
         }
     }
 }

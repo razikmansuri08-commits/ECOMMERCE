@@ -38,18 +38,18 @@ public class User_Service
     public User_dto create_us(UserRequest_Dto userdto)
     {
         // Case-insensitive email check
-        if (ur.existsByEmailIgnoreCase(userdto.getEmail())) {
+        if (ur.existsByEmail(userdto.getEmail())) {
             throw new EmailAlreadyExistsException("Email already exists");
         }
         // Case-insensitive name check
-        if(ur.existsByUsernameIgnoreCase(userdto.getName())) {
+        if(ur.existsByUsername(userdto.getName())) {
             throw new UserAlreadyExistsException("Username already exists");
         }
         
         User user = new User();
         user.setRoles(List.of(UserRoles.USER));
-        user.setName(userdto.getName().trim());
-        user.setEmail(userdto.getEmail().trim().toLowerCase(Locale.ROOT));
+        user.setName(userdto.getName());
+        user.setEmail(userdto.getEmail());
         user.setPassword(passwordEncoder.encode(userdto.getPassword()));
         
         Cart cart = new Cart();
@@ -96,7 +96,7 @@ public class User_Service
         
         if (dto.getName() != null && !dto.getName().equals(us.getName())) {
             String normalizedName = dto.getName().trim();
-            if(ur.existsByUsernameIgnoreCase(normalizedName)) {
+            if(ur.existsByUsername(normalizedName)) {
                 throw new UserAlreadyExistsException("Username already exists");
             }
             us.setName(normalizedName);
@@ -104,7 +104,7 @@ public class User_Service
         
         if (dto.getEmail() != null && !dto.getEmail().equals(us.getEmail())) {
             String normalizedEmail = dto.getEmail().trim().toLowerCase(Locale.ROOT);
-            if(ur.existsByEmailIgnoreCase(normalizedEmail)) {
+            if(ur.existsByEmail(normalizedEmail)) {
                 throw new EmailAlreadyExistsException("Email already exists");
             }
             us.setEmail(normalizedEmail);

@@ -25,23 +25,25 @@ public class NotificationEventListener {
             phase = TransactionPhase.AFTER_COMMIT
     )
     public void handleOrderCreated(OrderCreatedEvent event) {
+        String thread = Thread.currentThread().getName();
         try {
-            log.info("Creating in-app notification for order: {}, user: {}", 
-                    event.orderId(), event.username());
+            log.info("[thread={}] Creating in-app notification for order: {}, user: {}",
+                    thread, event.orderId(), event.username());
 
             notificationService.createNotification(
                     event.userId(),
                     NotificationType.ORDER_CONFIRMATION,
-                    "Order Confirmed 🎉",
-                    String.format("Your order #%s has been confirmed. Total: ₹%.2f", 
+                    "Order Confirmed",
+                    String.format("Your order #%s has been confirmed. Total: Rs.%.2f",
                             event.orderId(), event.totalAmount()),
                     "/user/orders/order/" + event.orderId()
             );
 
-            log.info("In-app notification created for order: {}", event.orderId());
+            log.info("[thread={}] In-app notification created for order: {}",
+                    Thread.currentThread().getName(), event.orderId());
         } catch (Exception e) {
-            log.error("Failed to create notification for order: {}", 
-                    event.orderId(), e);
+            log.error("[thread={}] Failed to create notification for order: {}",
+                    Thread.currentThread().getName(), event.orderId(), e);
         }
     }
 
@@ -51,24 +53,25 @@ public class NotificationEventListener {
     )
     public void handleOrderStatusUpdated(OrderStatusUpdatedEvent event) {
         try {
-            log.info("Creating notification for order status update: {}, user: {}", 
-                    event.orderId(), event.username());
+            log.info("[thread={}] Creating notification for order status update: {}, user: {}",
+                    Thread.currentThread().getName(), event.orderId(), event.username());
 
             String message = getStatusMessage(event.newStatus());
-            
+
             notificationService.createNotification(
                     event.userId(),
                     getNotificationTypeForStatus(event.newStatus()),
                     "Order Status Updated",
-                    String.format("Order #%s status changed to: %s", 
+                    String.format("Order #%s status changed to: %s",
                             event.orderId(), event.newStatus()),
                     "/user/orders/order/" + event.orderId()
             );
 
-            log.info("In-app notification created for order status update: {}", event.orderId());
+            log.info("[thread={}] In-app notification created for order status update: {}",
+                    Thread.currentThread().getName(), event.orderId());
         } catch (Exception e) {
-            log.error("Failed to create notification for order status update: {}", 
-                    event.orderId(), e);
+            log.error("[thread={}] Failed to create notification for order status update: {}",
+                    Thread.currentThread().getName(), event.orderId(), e);
         }
     }
 

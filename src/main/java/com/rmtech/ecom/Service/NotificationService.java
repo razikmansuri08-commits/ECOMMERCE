@@ -31,6 +31,8 @@ public class NotificationService {
 
     @Transactional
     public Notification createNotification(Long userId, NotificationType type, String title, String message, String link) {
+        log.info("[thread={}] Persisting {} notification for user: {}",
+                Thread.currentThread().getName(), type, userId);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found: " + userId));
 
@@ -43,7 +45,8 @@ public class NotificationService {
         notification.setLink(link);
 
         Notification saved = notificationRepository.save(notification);
-        log.info("Notification created: {} for user: {}", type, userId);
+        log.info("[thread={}] Notification created: {} for user: {}",
+                Thread.currentThread().getName(), type, userId);
         return saved;
     }
 

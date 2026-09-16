@@ -17,15 +17,15 @@ public interface User_Repo extends JpaRepository<User, Long>, JpaSpecificationEx
     // SELECT 1 ... LIMIT 1 and never returns null, so the JDK proxy never
     // hits "Null return value from advice does not match primitive return type".
     @Query("SELECT 1 FROM User u WHERE LOWER(u.name) = LOWER(:username)")
-    boolean existsByUsernameIgnoreCase(String username);
+    boolean existsByUsername(String username);
 
     @Query("SELECT 1 FROM User u WHERE LOWER(u.email) = LOWER(:email)")
-    boolean existsByEmailIgnoreCase(String email);
+    boolean existsByEmail(String email);
 
     @Query("SELECT u FROM User u WHERE u.id = :id")
     User findbyid(@Param("id") Long id);
 
-    boolean existsByEmail(String email);
+//    boolean existsByEmail(String email);
 
     Page<User> findAll(Pageable pageable);
 }

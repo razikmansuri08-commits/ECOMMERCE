@@ -53,8 +53,8 @@ class UserServiceTest {
         request.setEmail("razik@example.com");
         request.setPassword("password123");
 
-        when(userRepo.existsByEmailIgnoreCase("razik@example.com")).thenReturn(false);
-        when(userRepo.existsByUsernameIgnoreCase("Razik")).thenReturn(false);
+        when(userRepo.existsByEmail("razik@example.com")).thenReturn(false);
+        when(userRepo.existsByUsername("Razik")).thenReturn(false);
         when(passwordEncoder.encode("password123")).thenReturn("encoded-password");
         when(userRepo.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -108,8 +108,8 @@ class UserServiceTest {
         UserRequest_Dto request = new UserRequest_Dto();
         request.setName("Razik");
         request.setEmail("razik@example.com");
-        when(userRepo.existsByEmailIgnoreCase("razik@example.com")).thenReturn(false);
-        when(userRepo.existsByUsernameIgnoreCase("Razik")).thenReturn(true);
+        when(userRepo.existsByEmail("razik@example.com")).thenReturn(false);
+        when(userRepo.existsByUsername("Razik")).thenReturn(true);
 
         assertThrows(
                 UserAlreadyExistsException.class,
@@ -131,7 +131,7 @@ class UserServiceTest {
         when(userRepo.findbyusername("Razik")).thenReturn(user);
         when(passwordEncoder.encode("new-password")).thenReturn("encoded-new-password");
 
-        User_dto result = userService.update_us("Razik", update);
+        User_dto result = userService.update_us(user.getName(), update);
 
         assertEquals("R M", result.getName());
         assertEquals("new@example.com", result.getEmail());

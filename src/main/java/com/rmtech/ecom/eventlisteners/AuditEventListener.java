@@ -26,23 +26,25 @@ public class AuditEventListener {
     )
     public void handleOrderCreated(OrderCreatedEvent event) {
         try {
-            log.debug("Auditing order creation: {}", event.orderId());
+            log.info("[thread={}] Auditing order creation: {}",
+                    Thread.currentThread().getName(), event.orderId());
 
             auditLogService.logAsync(
                     AuditAction.PLACE_ORDER,
                     "Order",
                     event.orderId(),
-                    String.format("Order placed by %s. Total amount: ₹%.2f", 
+                    String.format("Order placed by %s. Total amount: Rs.%.2f",
                             event.username(), event.totalAmount()),
                     event.username(),
                     true,
                     null
             );
 
-            log.debug("Audit log created for order: {}", event.orderId());
+            log.info("[thread={}] Audit log created for order: {}",
+                    Thread.currentThread().getName(), event.orderId());
         } catch (Exception e) {
-            log.error("Failed to create audit log for order creation: {}", 
-                    event.orderId(), e);
+            log.error("[thread={}] Failed to create audit log for order creation: {}",
+                    Thread.currentThread().getName(), event.orderId(), e);
         }
     }
 
@@ -52,8 +54,8 @@ public class AuditEventListener {
     )
     public void handleOrderStatusUpdated(OrderStatusUpdatedEvent event) {
         try {
-            log.debug("Auditing order status update: {} from {} to {}", 
-                    event.orderId(), event.previousStatus(), event.newStatus());
+            log.info("[thread={}] Auditing order status update: {} from {} to {}",
+                    Thread.currentThread().getName(), event.orderId(), event.previousStatus(), event.newStatus());
 
             auditLogService.logAsync(
                     AuditAction.UPDATE_STATUS,
@@ -66,10 +68,11 @@ public class AuditEventListener {
                     null
             );
 
-            log.debug("Audit log created for order status update: {}", event.orderId());
+            log.info("[thread={}] Audit log created for order status update: {}",
+                    Thread.currentThread().getName(), event.orderId());
         } catch (Exception e) {
-            log.error("Failed to create audit log for order status update: {}", 
-                    event.orderId(), e);
+            log.error("[thread={}] Failed to create audit log for order status update: {}",
+                    Thread.currentThread().getName(), event.orderId(), e);
         }
     }
 }

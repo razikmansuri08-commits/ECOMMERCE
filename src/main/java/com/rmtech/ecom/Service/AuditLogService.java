@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -26,6 +25,8 @@ public class AuditLogService {
 
     public AuditLog createAuditLog(AuditAction action, String entityType, String entityId,
                                    String details, String performedBy, boolean success, String failureReason) {
+        log.info("[thread={}] Persisting audit log: {} - {}",
+                Thread.currentThread().getName(), action, entityId);
         AuditLog auditLog = new AuditLog();
         auditLog.setAction(action);
         auditLog.setEntityType(entityType);
@@ -37,7 +38,8 @@ public class AuditLogService {
         auditLog.setFailureReason(failureReason);
 
         AuditLog saved = auditLogRepository.save(auditLog);
-        log.debug("Audit log created: {} - {}", action, entityId);
+        log.debug("[thread={}] Audit log created: {} - {}",
+                Thread.currentThread().getName(), action, entityId);
         return saved;
     }
 
@@ -45,9 +47,12 @@ public class AuditLogService {
     public void logAsync(AuditAction action, String entityType, String entityId,
                          String details, String performedBy, boolean success, String failureReason) {
         try {
+            log.info("[thread={}] Async audit task started for: {} - {}",
+                    Thread.currentThread().getName(), action, entityId);
             createAuditLog(action, entityType, entityId, details, performedBy, success, failureReason);
         } catch (Exception e) {
-            log.error("Failed to create audit log asynchronously", e);
+            log.error("[thread={}] Failed to create audit log asynchronously",
+                    Thread.currentThread().getName(), e);
         }
     }
 

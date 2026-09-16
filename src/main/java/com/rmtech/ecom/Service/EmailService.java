@@ -5,10 +5,12 @@ import com.resend.core.exception.ResendException;
 import com.resend.services.emails.model.CreateEmailOptions;
 import com.resend.services.emails.model.CreateEmailResponse;
 import com.rmtech.ecom.Exception.EmailSendException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
+@Slf4j
 public class EmailService {
     private final Resend resend;
 
@@ -24,12 +26,16 @@ public class EmailService {
             String orderId,
             Double totalAmount) {
 
+        String thread = Thread.currentThread().getName();
+        log.info("[thread={}] Sending order confirmation email for order: {} to {}",
+                thread, orderId, customerEmail);
+
         String html = """
                 <!DOCTYPE html>
                 <html>
                 <body>
 
-                    <h2>Order Confirmed 🎉</h2>
+                    <h2>Order Confirmed</h2>
 
                     <p>Thank you for your order.</p>
 
@@ -38,7 +44,7 @@ public class EmailService {
                     </p>
 
                     <p>
-                        <strong>Total Amount:</strong> ₹%.2f
+                        <strong>Total Amount:</strong> Rs.%.2f
                     </p>
 
                     <p>
@@ -69,11 +75,12 @@ public class EmailService {
             CreateEmailResponse response =
                     resend.emails().send(params);
 
-            System.out.println(
-                    "Email sent. ID: " + response.getId()
-            );
+            log.info("[thread={}] Email sent for order: {}. Resend ID: {}",
+                    Thread.currentThread().getName(), orderId, response.getId());
 
         } catch (ResendException e) {
+            log.error("[thread={}] Failed to send order confirmation email for order: {}",
+                    Thread.currentThread().getName(), orderId, e);
             throw new EmailSendException(
                     "Failed to send order confirmation email to " + customerEmail,
                     e
